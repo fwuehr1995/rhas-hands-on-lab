@@ -1,7 +1,7 @@
 ---
 site:
   title: |
-    LB2255: Jumpstarter + Red Hat In-Vehicle OS Lab
+    Summit Connect Hands-On-Lab: Containers on wheels
   url: https://redhat-scholars.github.io/course-template
   start_page: modules::index.adoc
 

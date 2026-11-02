@@ -1,5 +1,5 @@
 name: modules
-title: "LB2255: Jumpstarter + Red Hat In-Vehicle OS Lab"
+title: "Summit Connect Hands-On-Lab: Containers on wheels"
 version: master
 nav:
   - modules/ROOT/nav.adoc
@@ -7,7 +7,7 @@ nav:
 asciidoc:
   attributes:
     openshift_cluster_ingress_domain: apps.cluster-p9c6m.p9c6m.sandbox5028.opentlc.com
-    lab_name: "Jumpstarter + Red Hat In-Vehicle OS Lab"
+    lab_name: "Summit Connect Hands-On-Lab: Containers on wheels"
     release-version: master
     page-pagination: true
     page-links:
