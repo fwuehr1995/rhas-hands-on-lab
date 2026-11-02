@@ -30,6 +30,10 @@ ui:
       contents: ./supplemental-ui/partials/footer-scripts.hbs
     - path: partials/head-styles.hbs
       contents: ./supplemental-ui/partials/head-styles.hbs
+    - path: partials/header-content.hbs
+      contents: ./supplemental-ui/partials/header-content.hbs
+    - path: img/header-logo.svg
+      contents: ./supplemental-ui/img/header-logo.svg
 
 runtime:
   cache_dir: ./.cache/antora
