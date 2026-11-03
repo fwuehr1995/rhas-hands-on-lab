@@ -1,7 +1,7 @@
-= Red Hat Automotive Development Platform
+= Red Hat Automotive Suite
 
 == Overview
-https://developers.redhat.com/rhdh/overview[Red Hat Developer Hub,window=_blank] sits at the core of the Red Hat Automotive Development Platform (RHADP), 
+https://developers.redhat.com/rhdh/overview[Red Hat Developer Hub,window=_blank] sits at the core of the Red Hat Automotive Suite (RHAS), 
 creating an integrated ecosystem for software-defined vehicle development. Think of it as your central command center where you and your team can:
 
 - Access pre-configured tools and standardized workflows without the usual setup headaches.
@@ -14,7 +14,7 @@ prototyping when you need to validate concepts quickly.
 
 == Solution architecture
 
-At its heart, RHADP combines Red Hat Developer Hub with Red Hat Dev Spaces to give you instant access to fully-configured development environments. 
+At its heart, RHAS combines Red Hat Developer Hub with Red Hat Dev Spaces to give you instant access to fully-configured development environments. 
 
 This Internal Development Platform (IDP) is built on the open-source https://backstage.spotify.com/[Backstage,window=_blank] project and comes ready 
 with all the tools, extensions, and configurations you need through a single dashboard. 
@@ -26,9 +26,9 @@ This approach means that:
 - Development processes follow standardized patterns while still allowing for innovation.
 - Environment-related issues become a thing of the past.
 
-The diagram below provides an overview of the RHADP architecture:
+The diagram below provides an overview of the RHAS architecture:
 
-image::rhadp/01-architecture.png[]
+image::rhas/01-architecture.png[]
 
 [#workflow]
 == Development workflow

@@ -23,8 +23,8 @@ In this lab, you will follow a typical development workflow for automotive softw
 * Build a new Red Hat In-Vehicle OS (RHIVOS) image with the application and test it on a virtual machine
 * Use Jumpstarter to test the application interactively
 
-At the end of this lab, you will have a basic understanding of the Red Hat Automotive Development Platform and how to use it to develop, build, and test automotive software.
+At the end of this lab, you will have a basic understanding of the Red Hat Automotive Suite and how to use it to develop, build, and test automotive software.
 
 == Next
 
-Before diving into the lab activities, let's take a look at the Red Hat Automotive Development Platform and Jumpstarter.
+Before diving into the lab activities, let's take a look at the Red Hat Automotive Suite and Jumpstarter.
