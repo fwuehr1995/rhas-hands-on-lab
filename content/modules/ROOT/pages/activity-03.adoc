@@ -9,7 +9,7 @@ Jumpstarter manages remote access to Exporters using Leases, which give a client
 When a Lease is created, the Jumpstarter Service attempts to find a matching Exporter using a label selector. 
 After a Lease has been acquired, the client starts a session within that Lease to access the hardware remotely.
 
-NOTE: Your workspace is already configured with credentials to access a Jumpstarter Service running on the cluster, with multiple Exporters available for lease.
+NOTE: You authenticated to the Jumpstarter service with `jmp-login` in the previous activity. Several Exporters are available for lease on the cluster.
 
 == Preparing your workspace
 
@@ -40,22 +40,50 @@ Each exporter can be configured with a set of labels that can be used to select 
 For example, Exporters can be configured with a label named `arch` that indicates their architecture, and then you can select 
 a device of a particular architecture by using this label, e.g. `arch=aarch64`.
 
+image::starter/07-get-exporters.png[]
+
+[#caibimagelist]
+== Find an image to flash
+
+Images are built by the Cloud Automotive Image Builder service and kept in the cluster registry.
+Before leasing a device, pick the image you want to put on it.
+
+[source,sh,role=execute]
+----
+caib image list
+----
+
+This lists every image the build service has produced, with its status, age, the service account that
+built it, and the registry URI.
+
+IMPORTANT: Copy the URI of the most recent image whose status is `Completed`. It looks like this:
+
+[source,sh]
+----
+default-route-openshift-image-registry.{openshift_cluster_ingress_domain}/automotive-dev-operator-system/pr-build-validate-<id>:disk
+----
+
+NOTE: The subcommand is `image`, singular. `caib images list` is not a valid command.
+
 == Leases and Exporters
 
 A `Lease` is a way to access an Exporter. 
 
-To select an Exporter of `type=virtual` and create a Lease, run the following command:
+To select a QEMU Exporter and create a Lease, run the following command:
 
 [source,sh,role=execute]
 ----
-jmp shell --selector type=virtual
+jmp shell -l device=qemu
 ----
 
-The `jmp` command uses the default config file located at `~/.config/jumpstarter/clients/lab.yaml`. 
+The `-l` parameter selects an Exporter by label. Every Exporter in this lab carries the labels
+`device=qemu,type=virtual`, so `device=qemu` matches any free one.
 
-The default client uses the `--selector` parameter to find an Exporter that matches the label `type=virtual`.
+The lease is granted for 30 minutes, and is released automatically when you leave the shell.
 
-TIP: Notice that your shell prompt changed to `jumpstarter ⚡remote ➤`. This is to remind you that you are inside a remote Jumpstarter shell session.
+TIP: Notice that your shell prompt changed to `rhas-starter ⚡qemu-exporter-0 ➤`, naming the Exporter you were given. This is to remind you that you are inside a remote Jumpstarter shell session.
+
+NOTE: While you hold a lease, the shell periodically prints `Token expires in ... Will attempt auto-refresh.` This is expected and can be ignored.
 
 When you lease an Exporter, you get exclusive access to the hardware interfaces connected to the Exporter for the duration of the lease.
 
@@ -95,14 +123,33 @@ A physical device with a similar interface could be interacted with in the same 
 
 == Booting a device
 
-Before booting your virtual device, you have to flash it with an operating system image:
+Before booting your virtual device, you have to flash it with the operating system image you picked above.
+
+First store the image URI in a variable, pasting the URI you copied from `caib image list`:
 
 [source,sh,role=execute]
 ----
-./scripts/flash-prebuilt
+DISKIMAGE=<paste the URI here>
 ----
 
-NOTE: The script flashes a prebuilt RHIVOS image to the virtual device. You will build a custom image in a later exercise.
+Then flash it:
+
+[source,sh,role=execute]
+----
+j flasher flash oci://$DISKIMAGE
+----
+
+The image is pulled from the registry and streamed straight to the device — there is no intermediate file.
+A 500 MB compressed layer expands to roughly 1.4 GB on the device, and the whole operation takes a few seconds.
+
+The flash is finished when you see:
+
+[source,sh]
+----
+Result: FLASH_COMPLETED
+----
+
+image::starter/08-image-list-lease.png[]
 
 After flashing, you can boot the device and view the boot messages via the serial console:
 
@@ -110,6 +157,10 @@ After flashing, you can boot the device and view the boot messages via the seria
 ----
 j power on && j console start-console
 ----
+
+image::starter/09-flash-and-boot.png[]
+
+NOTE: During boot you will see messages such as `ConvertPages: failed to find range` and `Initramfs unpacking failed: Decoding failed`. These are known cosmetic errors and do not affect the lab.
 
 Once the image has finished booting, you will be presented with a login prompt. Login with the following credentials:
 
@@ -138,6 +189,34 @@ uname -m
 
 It should print `aarch64`, meaning that this is a ARM based virtual device.
 
+image::starter/10-root-shell.png[]
+
+=== Inspecting the qm partition
+
+The automotive image runs your application inside the *qm* partition, a separate container that isolates
+quality-managed workloads from the rest of the system. List the running containers:
+
+[source,sh,role=execute]
+----
+podman ps
+----
+
+You should see a single container named `qm`, running `/sbin/init`.
+
+To get a shell inside it:
+
+[source,sh,role=execute]
+----
+podman exec -it qm bash
+----
+
+WARNING: The `-it` flags are required. Without them the command appears to succeed but leaves you in the
+host shell rather than inside the container, which is easy to miss.
+
+image::starter/11-qm-container.png[]
+
+Type `exit` to leave the container shell and return to the host.
+
 IMPORTANT: Quit the serial console by *pressing `Ctrl+B` three times*.
 
 Your shell prompt will be restored to `jumpstarter ⚡remote ➤`.
@@ -146,6 +225,11 @@ Your shell prompt will be restored to `jumpstarter ⚡remote ➤`.
 == Port forwarding and remote access
 
 NOTE: This section is optional and you can continue with section "Testing with Pytest" if you want to skip it.
+
+WARNING: Network access to the device is under investigation. In the 2026-11-04 dry run, connecting
+directly to the pod over SSH failed even with `sshd` running, and a cluster network policy is the suspected
+cause. The Jumpstarter port-forwarding route below is a different mechanism and was not re-tested in that
+session. Verify this section works before relying on it in front of participants.
 
 Sometimes your tests cannot be executed directly on the target device or the Exporter host.
 To support these use cases, Jumpstarter implements port forwarding, which allows you to interact 
@@ -308,10 +392,10 @@ You should still be in the remote Jumpstarter shell session:
 
 [,console]
 ----
-jumpstarter ⚡remote ➤
+rhas-starter ⚡qemu-exporter-0 ➤
 ----
 
-TIP: If you are *NOT* inside the remote Jumpstarter shell session, run `jmp shell --selector type=virtual` to lease a new Exporter. Then run the `./scripts/flash-prebuilt` to flash the device again.
+TIP: If you are *NOT* inside the remote Jumpstarter shell session, run `jmp shell -l device=qemu` to lease a new Exporter. Then flash the device again with `j flasher flash oci://$DISKIMAGE`.
 
 Run the test script using pytest:
 
@@ -324,10 +408,10 @@ You should see the test results:
 
 [,console]
 ----
-jumpstarter-lab ⚡remote ➤ pytest
+rhas-starter ⚡qemu-exporter-0 ➤ pytest
 ========================================================================= test session starts =========================================================================
 platform linux -- Python 3.12.9, pytest-8.3.5, pluggy-1.5.0
-rootdir: /projects/jumpstarter-lab
+rootdir: /projects/rhas-starter
 configfile: pytest.ini
 plugins: anyio-4.9.0, asyncio-0.26.0, cov-6.1.1
 asyncio: mode=Mode.STRICT, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function

@@ -4,13 +4,13 @@
 
 Here is a quick overview of the first activities in this lab:
 
-- Start your development workflow in the Red Hat Developer Hub portal.
-- Browse through the template catalog and select one tailored for automotive software development.
-- Create a new project from the template.
-- Launch your ready-to-code environment in Red Hat OpenShift Dev Spaces.
+- Register your own account on the Red Hat Automotive Suite.
+- Launch a ready-to-code environment in Red Hat OpenShift Dev Spaces, created directly from the lab repository.
+- Verify that the Cloud Automotive Image Builder service is reachable from your workspace.
+- Authenticate to the Jumpstarter service so you can lease a test device later.
 
-Behind the scenes, Red Hat Developer Hub automatically structures your project and provides all the 
-supporting infrastructure through OpenShift GitOps so that you can focus on coding, not setup.
+Behind the scenes, OpenShift Dev Spaces builds your workspace from the devfile in the lab repository and
+provides all supporting infrastructure, so that you can focus on coding, not setup.
 
 [#beforeyoustart]
 == Before you start
@@ -27,7 +27,7 @@ TIP: This is a tip that will help you complete the lab.
 
 == Tips for working with the lab environment
 
-TIP: All login information is available via the side bar item, "Cheatsheet"
+TIP: All URLs for this lab are available via the side bar item, "Cheatsheet"
 
 TIP: Clicking a screen shot enlarges it. Clicking it again returns it to its original size.
 
@@ -36,141 +36,153 @@ TIP: In Red Hat OpenShift Dev Spaces, you do not need to save your work. Changes
 WARNING: In Red Hat OpenShift Dev Spaces, do *NOT* use Ctrl-W to close an editor. This will only close the entire browser window!
 
 
-[#devhub]
-== Access Red Hat Developer Hub
+[#register]
+== Register for the Red Hat Automotive Suite
 
-First you have to access the https://backstage-backstage.{openshift_cluster_ingress_domain}[Red Hat Developer Hub,window=_blank]. You can access the login page using this link:
+There are no pre-provisioned accounts in this lab. You create your own.
 
-https://backstage-backstage.{openshift_cluster_ingress_domain}[window=_blank]
+IMPORTANT: Open the OpenShift console in a *private browser window*:
 
-IMPORTANT: Select the *GitLab* login option.
+https://console-openshift-console.{openshift_cluster_ingress_domain}[window=_blank]
 
-image::setup/00-sign-in-backstage.png[]
+WARNING: Use a private window. If your browser already holds cookies for `opentlc.com` from another lab,
+the console signs you in with those stale credentials instead of showing the registration page, and the rest
+of this lab will fail in confusing ways.
 
-When prompted, log in with the following credentials:
+IMPORTANT: On the login page, choose to *register* a new account.
 
-.Username
-[source,sh,role=copypaste,subs="+attributes"]
-----
-{user}
-----
+image::starter/01-register.png[]
 
-.Password
-[source,sh,role=copypaste,subs="+attributes"]
-----
-{password}
-----
+Fill in a username, a password and an email address.
 
-'''
+NOTE: The email address is *not* verified. Any syntactically valid address works. Pick a username you will recognise again — it becomes your OpenShift identity and appears in the name of your build namespace.
 
-IMPORTANT: Click *Authorize keycloak* to access GitLab:
+TIP: Write your username and password down. Nothing else in the lab can recover them for you.
 
-image::setup/02-access-gitlab.png[]
-
-Once authenticated, you have full access to the Red Hat Developer Hub portal where you can browse templates, create projects, and access your development environments.
-
-The portal serves as your single point of entry for all automotive software development activities, providing access to templates, documentation, and your OpenShift Dev Spaces workspaces.
-
-
-[#project]
-== Project creation
-
-Next, create a new project from a template by following these steps.
-
-IMPORTANT: Click the *Create* button on the side bar
-
-image::setup/03-backstage-dashboard.png[]
-
-IMPORTANT: Use the *LB2255 - Jumpstarter* template
-
-image::setup/04-backstage-create.png[]
-
-IMPORTANT: When asked to provide project information, leave the default values and click *Review*
-
-WARNING: Stick with the default project name, otherwise you will encounter errors accessing links in the showroom documentation.
-
-image::setup/05-backstage-create-info.png[]
-
-IMPORTANT: On the Review page, click *Create*
-
-image::setup/06-backstage-create-review.png[]
-
-The source code repo and development environment will be created in a few seconds, and the completion page opens.
-
-IMPORTANT: Click *Open Component in catalog* to access your new development environment
-
-image::setup/07-backstage-create-finish.png[]
+Once registered, you are signed in to the OpenShift console.
 
 
 [#devspaces]
-== Access Red Hat OpenShift Dev Spaces
+== Create your Dev Spaces workspace
 
-To start coding, you need to access the Red Hat OpenShift Dev Spaces instance created for your project.
+Your development environment is created directly from the lab repository — there is no separate portal or catalog step.
 
-IMPORTANT: Click *DevSpace jumpstarter-lab* to launch the Red Hat OpenShift Dev Space instance.
+IMPORTANT: Open Red Hat OpenShift Dev Spaces:
 
-image::setup/08-backstage-component.png[]
+https://devspaces.{openshift_cluster_ingress_domain}[window=_blank]
 
-As you did when accessing the Red Hat Developer Hub, you have to log in to Red Hat OpenShift Dev Spaces 
-and authorize the application to access Red Hat OpenShift and GitLab.
+IMPORTANT: Choose *Log in with OpenShift* and approve the permission request when prompted.
 
-IMPORTANT: Choose *Log in with OpenShift*
+On the *Create Workspace* page, import the lab repository.
 
-image::setup/09-log-in-devspace.png[]
+IMPORTANT: Paste the following into the *Git repo URL* field, then click *Create & Open*.
 
-IMPORTANT: On the OpenShift login page, choose to login with *rhsso*.
-
-image::setup/10-login-devspace-rhsso.png[]
-
-When prompted, log in with the following credentials:
-
-.Username
 [source,sh,role=copypaste,subs="+attributes"]
 ----
-{user}
+{lab_repo_url}
 ----
 
-.Password
-[source,sh,role=copypaste,subs="+attributes"]
-----
-{password}
-----
+image::starter/02-create-workspace.png[]
 
-'''
+The workspace now starts. It walks through initializing, creating the workspace, waiting for it to start, and finally opening the IDE.
 
-IMPORTANT: When asked to authorize access to your account, click *Allow selected permissions*
+image::starter/03-workspace-starting.png[]
 
-image::setup/12-login-devspace-openshift.png[]
-
-IMPORTANT: When asked "Do you trust the author of this repository?", click *Continue*.
-
-image::setup/13-devspace-create.png[]
-
-IMPORTANT: When asked to authorize *devspaces* to access your account on GitLab, click *Authorize devspaces*
-
-image::setup/14-devspace-gitlab-access.png[]
-
-NOTE: The creation of the *Workspace* can take a few minutes.
-
-image::setup/15-devspace-starting.png[]
-
-
-[#workspace]
-== Prepare the workspace
-
-After the Workspace is created, you are redirected to the VS Code development environment.
+NOTE: This takes about a minute on the shared lab cluster. Masters and workers currently run on the same nodes; expect this to be quicker once worker nodes move to bare metal.
 
 IMPORTANT: If prompted "Do you trust the authors of the files in this workspace?", click *Yes, I trust the authors*
 
-image::setup/17-devspace-trust.png[]
-
 TIP: On the bottom right of the screen you may see some popup notifications, you can safely dismiss them.
 
-image::setup/18-devspace-popup.png[]
+You should see a familiar *VS Code* development environment in your browser.
 
-You should see a familiar *VS Code* development environment in your browser. 
 
+[#verify]
+== Verify your environment
+
+Before going further, confirm the workspace can reach the services it needs.
+
+IMPORTANT: Select *Terminal -> New Terminal* from the menu at the top left, and confirm the prompt.
+
+TIP: Enlarge the terminal panel so it fills the screen. You will spend most of this lab in it.
+
+Your prompt reads `(venv) rhas-starter (main) $`. The Python virtual environment the lab needs is already active.
+
+First, check that the Cloud Automotive Image Builder service is reachable:
+
+[source,sh,role=execute]
+----
+caib status
+----
+
+You should see output like this:
+
+[source,sh]
+----
+Server  https://ado-build-api-automotive-dev-operator-system.apps.rhas.sandbox3247.opentlc.com
+Source  CAIB_SERVER env
+Status  reachable
+----
+
+image::starter/04-caib-status.png[]
+
+NOTE: `caib` reads the server address from the `CAIB_SERVER` environment variable, which is already set in your workspace. If the status is anything other than `reachable`, stop and ask for help — nothing later in the lab will work.
+
+Next, confirm which OpenShift user you are:
+
+[source,sh,role=execute]
+----
+oc whoami
+----
+
+This must print the username you registered with. Your workspace inherits the OpenShift login, so there is no separate `oc login` step.
+
+
+[#jumpstarter]
+== Authenticate to Jumpstarter
+
+The `jmp` command-line tool needs its own authentication, using a browser-based device flow.
+
+IMPORTANT: Run the login command. Note the hyphen — this is `jmp-login`, not `jmp login`.
+
+[source,sh,role=execute]
+----
+jmp-login
+----
+
+The command prints a URL and waits:
+
+[source,sh]
+----
+Fetching configuration from login.auto-jumpstarter.apps.rhas.sandbox3247.opentlc.com...
+To sign in, open the following URL in your browser:
+
+  https://keycloak-keycloak.apps.rhas.sandbox3247.opentlc.com/realms/openshift/device?user_code=XXXX-XXXX
+
+Waiting for authentication...
+----
+
+IMPORTANT: Copy the URL with *Ctrl+Shift+C* and open it in a new browser tab.
+
+TIP: In a terminal, plain Ctrl+C interrupts the running command instead of copying. Use Ctrl+Shift+C.
+
+IMPORTANT: On the *Grant Access to jumpstarter-cli* page, click *Yes*.
+
+image::starter/05-grant-jumpstarter.png[]
+
+Back in the terminal, the command completes:
+
+[source,sh]
+----
+Waiting for authentication...
+Set 'she02' as the default client.
+Server saved: https://ado-build-api-automotive-dev-operator-system.apps.rhas.sandbox3247.opentlc.com
+----
+
+image::starter/06-jmp-login.png[]
+
+The name in the `Set '...' as the default client` line is your own username.
 
 == Next
 
-Now that you have set up your development environment, you are ready to start developing your application.
+Your environment is ready. Next you will develop and test the automotive application itself.

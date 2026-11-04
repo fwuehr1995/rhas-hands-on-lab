@@ -6,7 +6,12 @@ nav:
 
 asciidoc:
   attributes:
-    openshift_cluster_ingress_domain: apps.cluster-p9c6m.p9c6m.sandbox5028.opentlc.com
+    # Update this for every freshly provisioned workshop cluster. Every lab URL
+    # is derived from it, so this one line repoints the whole lab.
+    # Value below is the cluster used in the 2026-11-04 dry run.
+    openshift_cluster_ingress_domain: apps.rhas.sandbox3247.opentlc.com
+    # Repository participants import into Dev Spaces.
+    lab_repo_url: https://github.com/shetze/rhas-starter
     lab_name: "Summit Connect Hands-On-Lab: Containers on wheels"
     release-version: master
     page-pagination: true
