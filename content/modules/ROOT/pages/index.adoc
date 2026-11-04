@@ -27,4 +27,4 @@ At the end of this lab, you will have a basic understanding of the Red Hat Autom
 
 == Next
 
-Before diving into the lab activities, let's take a look at the Red Hat Automotive Suite and Jumpstarter.
+Before diving into the lab activities, let's take a look at the Red Hat In-Vehicle Operating System, the Red Hat Automotive Suite, and Jumpstarter.
