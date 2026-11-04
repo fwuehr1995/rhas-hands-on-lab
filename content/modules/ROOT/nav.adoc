@@ -1,3 +1,5 @@
+* xref:intro-rhivos.adoc[]
+
 * xref:intro-rhas.adoc[]
 
 * xref:intro-jmp.adoc[About Jumpstarter]

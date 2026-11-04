@@ -1,0 +1,38 @@
+= Red Hat In-Vehicle Operating System
+
+== Overview
+https://www.redhat.com/en/blog/new-standard-red-hat-vehicle-operating-system-modern-and-future-vehicles[Red Hat In-Vehicle Operating System (RHIVOS),window=_blank]
+delivers a Linux-based foundation for the software-defined vehicle, enabling cloud-native development, functional safety, and long-term relevancy.
+
+RHIVOS is built around three principles:
+
+- **Open** - Developed in the open, based on proven enterprise Linux technology.
+- **ASIL-B** - Designed for functional safety and certified according to ISO 26262 ASIL-B.
+- **Secure** - Built with the security practices you know from Red Hat Enterprise Linux.
+
+RHIVOS is the commercial product from Red Hat. Its upstream open source variant is the
+https://sigs.centos.org/automotive/[CentOS Automotive Stream Distribution (AutoSD),window=_blank],
+which is developed by the CentOS Automotive SIG. In this lab, you may come across both names.
+
+== Tailored to the automotive industry
+
+RHIVOS is tailored to meet the specific demands of the automotive industry:
+
+- **Package selection** - All RHEL packages and automotive-specific packages are included.
+- **Hardware architecture** - A wide variety of hardware platforms based on the aarch64 and x86 architectures is supported.
+- **Safety certification** - Certified according to ISO 26262 ASIL-B as a Safety Element out of Context (SEooC).
+- **Fast boot** - Optimized startup times for automotive applications.
+- **Real-time capabilities** - Reduced variation and preemptive latency, with PREEMPT-RT enabled by default.
+- **Mixed-criticality support** - Host multiple concurrent workloads at different integrity levels on the same system.
+- **Diverse use cases** - From digital cockpits and ADAS to gateways, and from QM up to ASIL-B applications.
+- **Modern software development** - Embrace containers and DevOps for agile build-test-deploy cycles.
+
+== Containers on wheels
+
+The last point is what this lab is all about. With RHIVOS, automotive applications can be packaged and delivered as containers,
+just like applications in the data center or the cloud. In the lab activities, you will embed a containerized application
+into a custom RHIVOS image, build it with the *automotive-image-builder* tool, and test it on virtual and physical hardware.
+
+== Next
+
+In the next section you will learn how the Red Hat Automotive Suite supports you in developing, building, and testing software for RHIVOS.
