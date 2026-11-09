@@ -4,21 +4,13 @@ For your convenience, this page contains access information to all systems in yo
 
 == Lab Login
 
-There are no pre-provisioned accounts. You register your own account on the Red Hat Automotive Suite
-at the start of the lab, and choose your own username and password.
+Your instructor gives you a lab user, for example `user35`, and its password. Your workspace in Red Hat OpenShift Dev Spaces is already created for you.
 
-TIP: Register in a *private browser window*. Cookies left over from another lab will sign you in with the wrong account.
+TIP: Log in in a *private browser window*. Cookies left over from another lab can sign you in with the wrong account.
 
-NOTE: The email address you provide at registration is not verified.
+// TODO: add the URL of the shared scratchpad for copying text and debug output, once it is set up.
 
 == Application URLs
-
-=== Red Hat Automotive Suite / OpenShift console https://console-openshift-console.{openshift_cluster_ingress_domain}['link',window=_blank]
-
-[source,sh,role=execute,subs=attributes+]
-----
-https://console-openshift-console.{openshift_cluster_ingress_domain}
-----
 
 === Red Hat Dev Spaces https://devspaces.{openshift_cluster_ingress_domain}['link',window=_blank]
 
@@ -27,7 +19,16 @@ https://console-openshift-console.{openshift_cluster_ingress_domain}
 https://devspaces.{openshift_cluster_ingress_domain}
 ----
 
+=== Red Hat Automotive Suite / OpenShift console https://console-openshift-console.{openshift_cluster_ingress_domain}['link',window=_blank]
+
+[source,sh,role=execute,subs=attributes+]
+----
+https://console-openshift-console.{openshift_cluster_ingress_domain}
+----
+
 === Lab repository
+
+Only needed if you have to delete and recreate your workspace.
 
 [source,sh,role=execute,subs=attributes+]
 ----
@@ -60,14 +61,14 @@ jmp-login
 NOTE: Copy the printed URL with *Ctrl+Shift+C*, open it in a browser, and click *Yes* on the
 *Grant Access to jumpstarter-cli* page.
 
-== Jumpstarter Examples
-
-=== List all Exporters
+=== List all Exporters (also checks your Jumpstarter login)
 
 [source,sh,role=execute]
 ----
 jmp get exporters
 ----
+
+== Flash and boot a device
 
 === Lease an Exporter
 
@@ -90,11 +91,15 @@ j
 caib image list
 ----
 
-=== Flash and boot a virtual device
+=== Flash and boot the device
+
+[source,sh]
+----
+DISKIMAGE=<uri from caib image list>
+----
 
 [source,sh,role=execute]
 ----
-DISKIMAGE=<uri from caib image list>
 j flasher flash oci://$DISKIMAGE
 ----
 
@@ -103,13 +108,47 @@ j flasher flash oci://$DISKIMAGE
 j power on && j console start-console
 ----
 
+Log in as `root` with password `password`.
+
 === Leave the serial console
 
 Press *Ctrl+B* three times.
 
-=== Get a shell in the qm partition
+=== Release the lease
 
 [source,sh,role=execute]
 ----
-podman exec -it qm bash
+exit
 ----
+
+== On the device
+
+=== List containers in the root partition
+
+[source,sh,role=execute]
+----
+podman ps
+----
+
+=== Follow the engine service log
+
+[source,sh,role=execute]
+----
+journalctl -f -u engine
+----
+
+=== Get a shell in the QM partition
+
+[source,sh,role=execute]
+----
+podman exec -it qm /bin/bash
+----
+
+=== Follow the radio service log (inside the QM partition)
+
+[source,sh,role=execute]
+----
+journalctl -f -u radio
+----
+
+Press *Ctrl+C* to stop following a log.
