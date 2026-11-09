@@ -1,29 +1,31 @@
 = Introduction to the Lab
 
-The move to software-defined vehicles (SDVs) in the automotive industry presents challenges in developing software for electronic control units (ECUs) that 
+The move to software-defined vehicles (SDVs) in the automotive industry presents challenges in developing software for electronic control units (ECUs) that
 require hardware-in-the-loop (HIL) testing.
 
-This lab provides you with an integrated development environment that teaches you how to use a "Software Factory" approach for the 
-development of automotive software. You will learn how to develop, build and test automotive software 
-in https://developers.redhat.com/products/openshift-dev-spaces/overview[Red Hat OpenShift Dev Spaces,window=_blank] and how to build a 
-custom https://www.redhat.com/en/blog/new-standard-red-hat-vehicle-operating-system-modern-and-future-vehicles[Red Hat In-Vehicle OS,window=_blank] 
-image with a containerized automotive application embedded.
+This lab shows you how a "Software Factory" approach supports the development of automotive software. You will work in
+https://developers.redhat.com/products/openshift-dev-spaces/overview[Red Hat OpenShift Dev Spaces,window=_blank], boot a
+https://www.redhat.com/en/blog/new-standard-red-hat-vehicle-operating-system-modern-and-future-vehicles[Red Hat In-Vehicle OS,window=_blank]
+image with containerized automotive applications on a virtual device, and look inside the running system.
 
-Additionally, you’ll explore https://jumpstarter.dev/[Jumpstarter,window=_blank] for cloud-native HIL testing of ECUs and edge devices. 
-You'll learn how it integrates with Red Hat OpenShift Dev Spaces and 
-https://www.redhat.com/en/technologies/cloud-computing/openshift/pipelines[Red Hat OpenShift Pipelines,window=_blank] to enable DevSecOps practices, 
-such as automation, continuous integration, and infrastructure as code.
+Along the way, you will use https://jumpstarter.dev/[Jumpstarter,window=_blank], the open source tool that gives you access to
+virtual and physical test devices. You will also see how it works together with
+https://www.redhat.com/en/technologies/cloud-computing/openshift/pipelines[Red Hat OpenShift Pipelines,window=_blank]
+to build and test every change automatically.
 
 == Lab activities and objectives
 
-In this lab, you will follow a typical development workflow for automotive software:
+This is a guided lab. You do not have to write code: you follow the steps and see each part of the
+platform in action.
 
-* Register for the lab environment and create a workspace from the lab repository
-* Develop and test the application in Red Hat Dev Spaces
-* Build a new Red Hat In-Vehicle OS (RHIVOS) image with the application and test it on a virtual machine
-* Use Jumpstarter to test the application interactively
+* Log in to your prepared workspace and connect it to the build service and to Jumpstarter
+* Lease a virtual device, flash a RHIVOS image onto it, and boot it
+* Explore the running system: the safety-relevant root partition, the QM partition, and the containerized applications in both
+* Find out how the image you booted was built: the image manifest and the automated build pipeline
 
-At the end of this lab, you will have a basic understanding of the Red Hat Automotive Suite and how to use it to develop, build, and test automotive software.
+The hands-on part takes about 60 minutes.
+
+At the end of this lab, you will have a basic understanding of the Red Hat Automotive Suite and how it helps you develop, build, and test automotive software.
 
 == Next
 

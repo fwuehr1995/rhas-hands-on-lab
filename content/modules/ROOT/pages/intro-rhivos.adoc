@@ -29,9 +29,17 @@ RHIVOS is tailored to meet the specific demands of the automotive industry:
 
 == Containers on wheels
 
-The last point is what this lab is all about. With RHIVOS, automotive applications can be packaged and delivered as containers,
-just like applications in the data center or the cloud. In the lab activities, you will embed a containerized application
-into a custom RHIVOS image, build it with the *automotive-image-builder* tool, and test it on virtual and physical hardware.
+The last two points are what this lab is all about. With RHIVOS, automotive applications can be packaged and delivered as containers,
+just like applications in the data center or the cloud.
+
+To support mixed criticality, a RHIVOS image is split into two partitions:
+
+- The *root partition*, also called the ASIL partition, runs the safety-relevant workloads.
+- The *QM partition* runs workloads that are only quality-managed (QM), such as infotainment. It is isolated from the root
+  partition, so that a misbehaving QM application cannot interfere with safety-relevant functions ("freedom from interference").
+
+In the lab activities, you will boot a RHIVOS image that runs containerized applications in both partitions, look at them
+from each side, and find out how the image was built with the *Automotive Image Builder*.
 
 == Next
 
