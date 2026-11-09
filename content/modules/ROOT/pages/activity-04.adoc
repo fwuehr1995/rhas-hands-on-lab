@@ -1,219 +1,201 @@
-= Testing and Validation
+= How the Image Is Built
 
 == Overview
 
-While Red Hat OpenShift Dev Spaces provides a consistent environment for developing, building, and testing automotive applications, comprehensive validation 
-requires testing on virtual or physical hardware. This additional testing ensures:
+The image you booted was not built by hand. It was produced by an automated pipeline on OpenShift, following the
+xref:intro-rhas.adoc#rhivosworkflow[workflow from source code to the device]:
 
-- System stability
-- Performance optimization
-- Compatibility across target platforms
+. A change is pushed to the lab repository.
+. OpenShift Pipelines builds the application and packages it as an RPM.
+. The Automotive Image Builder composes the RPM, the RHIVOS packages, and the application containers into an OS image, as described by the image manifest.
+. Jumpstarter flashes the image onto a virtual device, and automated tests check that it boots and that the application works.
 
-Before building a production-ready RHIVOS image, you must verify that your application functions correctly in a cloud environment. 
+In this activity, you look at the two files in the lab repository that drive this process: the image manifest and the pipeline definition.
+You only read them; you do not need to change anything.
 
-After that, you can build a RHIVOS image with the modified application embedded, preparing it for end-to-end testing in
-virtualized hardware environments using Jumpstarter.
-
-NOTE: The following activity builds upon activity "Application Development", where you modified the application code.
-
-[#test-app]
-== Enable tests
-
-Before committing your changes to the source code repository, you need to enable some test cases 
-that will be run against the application later in the pipeline.
-
-IMPORTANT: Open `tests/test_on_hardware.py` and remove the three code annotations.
-
-image::app/14-enable-test.png[]
-
-The code should look like this when you are done:
-
-image::app/14-enable-test-done.png[]
-
-Before removing the code annotations, the test cases only covered the RHIVOS image, verifying that it is booting correctly.
-The additional test cases test the radio application itself.
-
-The first test is to check if the container image of the apps is present:
-
-[source,python]
-----
-    def test_podman_images(self, client):
-        with client.console.pexpect() as console:
-            console.sendline("podman images")
-            console.expect_exact("]#", timeout=10)
-            assert "localhost/app" in console.before.decode()
-----
-
-The second test is to check if the radio app is running as a system service:
-
-[source,python]
-----
-    def test_radio_service(self, client):
-        with client.console.pexpect() as console:
-            console.sendline("systemctl status --no-pager radio.service")
-            console.expect_exact("]#", timeout=10)
-----
-
-The third test is to interact with the radio service, and see if it can change the volume.
-
-[source,python]
-----
-    def test_radio_service_interaction(self, client):
-        with client.console.pexpect() as console:
-            console.sendline("podman exec -i systemd-radio radio-client")
-            console.expect_exact("Connecting to radio service", timeout=10)
-
-            # test changing volume
-            console.sendline("+" * 10)
-            console.expect_exact("Volume:  [#####################]", timeout=10)
-            console.sendline("-" * 10)
-            console.expect_exact("Volume:  [                     ]", timeout=10)
-            console.sendline("+" * 5)
-            console.expect_exact("Volume:  [##########           ]", timeout=10)
-
-            console.sendline("q")
-            console.expect_exact("]#", timeout=10)
-----
 
 [#manifest]
 == The image manifest
 
-The contents of the RHIVOS image are declared in `manifests/auto-app.aib.yml`. Open it in the editor.
+The contents of the image are declared in a single file. Open `manifests/auto-app.aib.yml` in the editor.
 
-The manifest lists the RPM repositories to pull from, the packages to install, directories to create,
-and files to inject into the image:
-
-[source,yaml]
-----
-repos:
-  - id: alex
-    baseurl: https://download.copr.fedorainfracloud.org/results/alexl/cs9-sample-images/centos-stream-9-$arch/
-    priority: 10
-  - id: local
-    baseurl: file:///workspace/src/bin
-    priority: 5
-rpms:
-  - auto-app
-  - podman
-  - qm
-  - openssh-server
-  - dlt-daemon
-  - dlt-tools
-  - greenboot-default-health-checks
-  ...
-----
-
-Your application is delivered as a systemd Quadlet unit, injected through the `add_files` section:
+The `content` section describes the root partition. It lists the RPM repositories to pull from and the packages to install:
 
 [source,yaml]
 ----
-add_files:
-  - path: /etc/containers/systemd/engine.container
-    text: |
-      [Unit]
-      Description=Demo engine service container
-      Requires=routingmanagerd.socket
-
-      [Container]
-      Image=localhost/auto-apps
-      Volume=/run/vsomeip:/run/vsomeip
-      Exec=/usr/bin/engine-service
-
-      [Service]
-      Restart=always
-
-      [Install]
-      WantedBy=multi-user.target
+content:
+  repos:
+    ...
+    - id: local
+      baseurl: file:///workspace/export/
+      priority: 6
+  rpms:
+    - auto-app
+    - podman
+    - qm
+    - auto-apps
+    - dlt-daemon
+    - vsomeip3-routingmanager
+    ...
 ----
 
-NOTE: File contents are written inline with `text:`. The alternative `source_path:` form, which copies a
-file from the workspace into the image, is documented but currently fails to locate the file both locally
-and in the pipeline. Use the inline form.
+- `qm` installs the QM partition you explored in the previous activity.
+- `auto-app` is the small C++ application in the `src` directory of the lab repository. The pipeline builds it into an RPM
+  and places it in `/workspace/export`, which the `local` repository points to.
 
+The `container_images` entry pulls the `auto-apps` container image, which contains the engine, radio, and routing manager services,
+from a container registry and embeds it in the image:
 
-[#container]
-== Commit and push your changes
+[source,yaml]
+----
+  container_images:
+    - source: quay.io/shetze/auto-apps
+      tag: latest
+      name: localhost/auto-apps
+----
 
-Committing to the repository is all it takes to start a build — a webhook on the repository triggers the
-pipeline on every push.
+This is why you saw the image name `localhost/auto-apps` in `podman ps`: the container is already part of the OS image, so the
+device does not need network access to start its applications.
 
-IMPORTANT: Click the *Source Control* button in the left sidebar to open the source control tab.
+Each containerized application is started by a systemd *Quadlet* file, injected into the image through the `add_files` section.
+This is the engine service you saw in the root partition:
 
-IMPORTANT: In the input box, put `"add new radio station"` as the commit message, then click *Commit*.
+[source,yaml]
+----
+  add_files:
+    ...
+    - path: /etc/containers/systemd/engine.container
+      text: |
+        [Unit]
+        Description=engine service container (asil-to-qm)
+        Requires=routingmanagerd.service
+        After=routingmanagerd.service
 
-image::app/17-commit.png[]
+        [Container]
+        Image=localhost/auto-apps
+        Network=none
+        ...
+        Exec=/usr/bin/engine-service
+----
 
-IMPORTANT: Click the *Sync Changes* button to push your commit to the repository.
+The `qm` section further down describes the QM partition in the same way. It has its own packages, its own copy of the
+`auto-apps` container, and its own Quadlet files, such as `radio.container` for the radio service:
 
-image::app/18-push.png[]
+[source,yaml]
+----
+qm:
+  content:
+    ...
+    add_files:
+      - path: /etc/containers/systemd/radio.container
+        text: |
+          [Unit]
+          Description=radio service container (asil-to-qm)
 
-NOTE: If no pipeline run appears within a minute, push again. The webhook occasionally misses the first
-push of a session.
+          [Container]
+          Image=localhost/auto-apps
+          ...
+          Exec=/usr/bin/radio-service
+----
+
+NOTE: All file contents are written inline with `text:`, so the complete image definition is in one file.
+Files that the Automotive Image Builder should take from the workspace, such as the `auto-app` RPM, must be placed in
+`/workspace/export`, where the builder can see them.
+
+// TODO(dry run): Michael is verifying whether files copied to /workspace/export can also be
+// added with source_path:. Update the note above with the result.
+
+Finally, the `auth` section sets the root password you used to log in. The manifest also sets SELinux to permissive mode,
+which you saw in the previous activity.
 
 
 [#pipeline]
 == The build pipeline
 
-The push triggers a Tekton `PipelineRun` named `pr-build-validate-<id>`.
+The pipeline is defined as code in the repository, in `.tekton/pr-build-validate.yaml`. Open it in the editor.
 
-IMPORTANT: Open the OpenShift console and switch to the *Developer* perspective, then select *Pipelines*.
+https://pipelinesascode.com/[Pipelines as Code,window=_blank] watches the repository. Every push to the `main` branch
+starts a new run of this pipeline, named `pr-build-validate-<id>`. This is the name you saw in the image URI in `caib image list`.
 
-https://console-openshift-console.{openshift_cluster_ingress_domain}[window=_blank]
+The pipeline performs the following tasks:
 
-TIP: Your pipeline runs in the project `buildspace-<username>-rhas-starter`, where `<username>` is the
-account you registered in the first activity.
+- `setup-jmp`: Prepares a Jumpstarter client for the pipeline.
+- `clone-repo`: Clones the repository at the commit that was pushed.
+- `get-lease`: Requests a Jumpstarter lease on a virtual device (`type=virtual`, `device=qemu`) — the same kind of device you leased by hand.
+- `setup-workspace`: Prepares a build workspace on the Automotive Image Builder service.
+- `build-rpm`: Builds the `auto-app` RPM by running `make build-rpm-workspace`, which places it in `/workspace/export`.
+- `build-os`: Builds the qcow2 image for the `qemu` target and the `arm64` architecture from `manifests/auto-app.aib.yml`, and stores it in the registry.
+- `flash`: Flashes the new image to the leased device with `j flasher flash` — the same command you used.
+- `validate`: Runs the tests in `tests/boot_test.py` against the running device.
+- `cleanup`: Always runs at the end, releases the lease, and returns the device to the pool.
 
-image::starter/12-pipeline-run.png[]
+Open `tests/boot_test.py` to see what the `validate` task checks. The test powers on the device, logs in on the serial console
+with the same credentials you used, and checks that the `auto-app` application prints `Hello from AutoSD!`:
 
-Looking at the pipeline in detail, it performs the following tasks:
+[source,python]
+----
+class TestBootProcess(JumpstarterTest):
+    selector = "type=qemu"
 
-- `setup-jmp`: Prepares the Jumpstarter configuration used by the later tasks.
-- `clone-repo`: Clones the repository at the commit you just pushed.
-- `setup-workspace`: Prepares the build workspace.
-- `get-lease`: Requests and waits for a Jumpstarter Exporter lease. The leased device is used for testing in the following tasks.
-- `build-rpm`: Builds your application into an RPM package.
-- `build-os`: Builds the RHIVOS image from `manifests/auto-app.aib.yml`, with your RPM included.
-- `flash`: Flashes the new image to the leased device.
-- `validate`: Runs the test cases from the `tests` directory against the running device.
-- `cleanup`: Ends the lease and returns the device to the pool.
+    def test_boot(self, client):
+        client.power.on()
+        with client.console.pexpect() as console:
+            console.expect_exact("login:", timeout=60)
+            console.sendline("root")
+            ...
 
-This is the point of the Automotive Suite: the same pipeline that validates against a virtual QEMU device
-can target real hardware. Swap the Exporter and every change is tested on the physical ECU, inside the
-normal development cycle.
+    def test_auto_app(self, client):
+        with client.console.pexpect() as console:
+            console.sendline("auto-app")
+            console.expect_exact("Hello from AutoSD!", timeout=30)
+----
+
+The test uses the Jumpstarter Python API and https://docs.pytest.org/en/stable/[pytest,window=_blank]. The steps you performed by hand in the
+previous activities, such as leasing, flashing, powering on, and logging in, are exactly what the pipeline does automatically for every change.
+
+This is the point of the Red Hat Automotive Suite: every change is built into a complete OS image and tested on a device,
+inside the normal development cycle. Today the device is a virtual QEMU machine. Swap the Exporter label, and the same
+pipeline flashes and tests a physical ECU.
+
+// TODO(dry run): if the automated user setup also creates a buildspace (pipeline namespace) for every
+// user, add a step to view the pipeline runs in the OpenShift console:
+// Developer perspective -> Pipelines, project buildspace-<...>.
 
 
-[#reflash]
-== Flash and verify the new image
+[#bonus]
+== Optional: build the application yourself
 
-When the pipeline has finished, your new image is available from the build service.
+NOTE: This section is optional. Do it if you have time left.
+
+The `auto-app` application can also be built directly in your workspace, without the pipeline. Your workspace already
+contains the compiler and build tools.
+
+Build the application:
 
 [source,sh,role=execute]
 ----
-caib image list
+make build-local
 ----
 
-The newest entry is the image the pipeline just built. Copy its URI, then lease a device and flash it
-exactly as you did in the previous activity:
-
-[source,sh,role=execute]
-----
-jmp shell -l device=qemu
-----
+Then run it:
 
 [source,sh,role=execute]
 ----
-DISKIMAGE=<paste the URI here>
-j flasher flash oci://$DISKIMAGE
-j power on && j console start-console
+./bin/auto-app
 ----
 
-After logging in, confirm your application is present in the qm partition:
+[source,sh]
+----
+Hello from AutoSD!
+Version: 0.1 (a571ff2)
+----
 
-[source,sh,role=execute]
-----
-podman exec -it qm bash
-----
+This is the same program the `validate` task runs on the device. A cloud workspace like this one gives every developer
+the same, ready-to-use build environment, without installing a toolchain on their own laptop.
+
+// TODO(dry run): verify that make build-local works in the pre-provisioned workspace. If the
+// workspace runs on arm64 (uname -m), add that it builds natively for the target, without cross-compiling.
 
 == Next
 
-Now that you completed the development workflow, let's recap what you have learned.
+Now that you have walked through the development workflow, let's recap what you have learned.

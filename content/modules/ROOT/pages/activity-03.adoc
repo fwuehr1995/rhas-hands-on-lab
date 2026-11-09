@@ -1,440 +1,176 @@
-= Working with Jumpstarter
+= Exploring the System
 
-Not only can Jumpstarter help automate hardware testing in CI pipelines, but as your project grows, 
-Jumpstarter’s remote access capabilities enables your team to share limited hardware devices across 
-geographically dispersed teams in a secure, controlled, and efficient manner.
+== Overview
 
-Jumpstarter manages remote access to Exporters using Leases, which give a client access to an Exporter, for a specified period of time. 
+The image you just booted runs a small set of demo automotive applications, all delivered as containers:
 
-When a Lease is created, the Jumpstarter Service attempts to find a matching Exporter using a label selector. 
-After a Lease has been acquired, the client starts a session within that Lease to access the hardware remotely.
+- The *engine service* simulates the vehicle's drivetrain and periodically switches between driving and reversing.
+  It is safety-relevant, so it runs in the *root partition* (the ASIL partition).
+- The *radio service* simulates an infotainment radio. It is not safety-relevant, so it runs in the *QM partition*.
+- The *routing manager* connects the services. They talk to each other using https://some-ip.com/[SOME/IP,window=_blank],
+  a communication protocol widely used in vehicles.
 
-NOTE: You authenticated to the Jumpstarter service with `jmp-login` in the previous activity. Several Exporters are available for lease on the cluster.
+In this activity, you look at the same system from two sides: from the root partition and from inside the QM partition.
 
-== Preparing your workspace
+NOTE: You should still be logged in on the serial console of your device, with the prompt `[root@localhost ~]#`.
+If you are not, or if your 30-minute lease has expired in the meantime (the console disconnects and you are back at the
+`(venv) sc-demo (main) $` prompt), go back to the previous activity and lease, flash, and boot the device again.
 
-Interacting with Jumpstarter is done using the `jmp` command-line tool. Before you start, create a new terminal window.
 
-IMPORTANT: Select *Terminal -> New Terminal* from the left sidebar.
+[#rootpartition]
+== The view from the root partition
 
-image::app/21-terminal.png[]
-
-This will open a new terminal window.
-
-image::app/22-new-terminal.png[]
-
-
-[#jmpexporterlease]
-== List the Exporters
-
-The following commands should be executed in the open terminal window. 
-
-To list the available Exporters, run:
-
-[source,sh,role=execute]
-----
-jmp get exporters
-----
-
-Each exporter can be configured with a set of labels that can be used to select a particular group of Exporters when requesting a lease.
-For example, Exporters can be configured with a label named `arch` that indicates their architecture, and then you can select 
-a device of a particular architecture by using this label, e.g. `arch=aarch64`.
-
-image::starter/07-get-exporters.png[]
-
-[#caibimagelist]
-== Find an image to flash
-
-Images are built by the Cloud Automotive Image Builder service and kept in the cluster registry.
-Before leasing a device, pick the image you want to put on it.
-
-[source,sh,role=execute]
-----
-caib image list
-----
-
-This lists every image the build service has produced, with its status, age, the service account that
-built it, and the registry URI.
-
-IMPORTANT: Copy the URI of the most recent image whose status is `Completed`. It looks like this:
-
-[source,sh]
-----
-default-route-openshift-image-registry.{openshift_cluster_ingress_domain}/automotive-dev-operator-system/pr-build-validate-<id>:disk
-----
-
-NOTE: The subcommand is `image`, singular. `caib images list` is not a valid command.
-
-== Leases and Exporters
-
-A `Lease` is a way to access an Exporter. 
-
-To select a QEMU Exporter and create a Lease, run the following command:
-
-[source,sh,role=execute]
-----
-jmp shell -l device=qemu
-----
-
-The `-l` parameter selects an Exporter by label. Every Exporter in this lab carries the labels
-`device=qemu,type=virtual`, so `device=qemu` matches any free one.
-
-The lease is granted for 30 minutes, and is released automatically when you leave the shell.
-
-TIP: Notice that your shell prompt changed to `rhas-starter ⚡qemu-exporter-0 ➤`, naming the Exporter you were given. This is to remind you that you are inside a remote Jumpstarter shell session.
-
-NOTE: While you hold a lease, the shell periodically prints `Token expires in ... Will attempt auto-refresh.` This is expected and can be ignored.
-
-When you lease an Exporter, you get exclusive access to the hardware interfaces connected to the Exporter for the duration of the lease.
-
-To see the list of hardware interfaces exposed on the Exporter you have leased, run the `j` command without parameters:
-
-[source,sh,role=execute]
-----
-j
-----
-
-You should see an output like this:
-
-[source,sh]
-----
-Usage: j [OPTIONS] COMMAND [ARGS]...
-
-  Generic composite device
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  console  Serial port client
-  flasher  Generic flasher interface
-  power    Generic power
-  qemu     Generic composite device
-----
-
-As the remote Exporter is connected to a `virtual QEMU device`, you can use the above subcommands to interact with the device: 
-
-- control the power with the `power` subcommand
-- flash a new image with the `flasher` command
-- access the serial console with `console`
-
-A physical device with a similar interface could be interacted with in the same way.
-
-
-== Booting a device
-
-Before booting your virtual device, you have to flash it with the operating system image you picked above.
-
-First store the image URI in a variable, pasting the URI you copied from `caib image list`:
-
-[source,sh,role=execute]
-----
-DISKIMAGE=<paste the URI here>
-----
-
-Then flash it:
-
-[source,sh,role=execute]
-----
-j flasher flash oci://$DISKIMAGE
-----
-
-The image is pulled from the registry and streamed straight to the device — there is no intermediate file.
-A 500 MB compressed layer expands to roughly 1.4 GB on the device, and the whole operation takes a few seconds.
-
-The flash is finished when you see:
-
-[source,sh]
-----
-Result: FLASH_COMPLETED
-----
-
-image::starter/08-image-list-lease.png[]
-
-After flashing, you can boot the device and view the boot messages via the serial console:
-
-[source,sh,role=execute]
-----
-j power on && j console start-console
-----
-
-image::starter/09-flash-and-boot.png[]
-
-NOTE: During boot you will see messages such as `ConvertPages: failed to find range` and `Initramfs unpacking failed: Decoding failed`. These are known cosmetic errors and do not affect the lab.
-
-Once the image has finished booting, you will be presented with a login prompt. Login with the following credentials:
-
-.Username
-[.no-copy-label]
-[source,text,role=execute,subs=attributes+]
-----
-root
-----
-
-.Password
-[.no-copy-label]
-[source,text,role=execute,subs=attributes+]
-----
-password
-----
-
-TIP: Your shell prompt will changed to `[root@localhost ~]`. This is to remind you that you are inside the serial console of the virtual device.
-
-After logging into the system, you can check the system architecture using `uname`:
-
-[source,sh,role=execute]
-----
-uname -m
-----
-
-It should print `aarch64`, meaning that this is a ARM based virtual device.
-
-image::starter/10-root-shell.png[]
-
-=== Inspecting the qm partition
-
-The automotive image runs your application inside the *qm* partition, a separate container that isolates
-quality-managed workloads from the rest of the system. List the running containers:
+Containers in the root partition are managed by Podman, controlled by systemd. List the running containers:
 
 [source,sh,role=execute]
 ----
 podman ps
 ----
 
-You should see a single container named `qm`, running `/sbin/init`.
+You should see two containers:
 
-To get a shell inside it:
+[source,sh]
+----
+CONTAINER ID  IMAGE                         COMMAND               CREATED         STATUS         PORTS  NAMES
+dd383c3c2c99                                /sbin/init            12 seconds ago  Up 11 seconds         qm
+8b0bfe959...  localhost/auto-apps:latest    /usr/bin/engine-s...  12 seconds ago  Up 12 seconds         systemd-engine
+----
+
+- `systemd-engine` is the engine service, running from the `auto-apps` container image.
+- `qm` is the whole QM partition. It is a container too, running its own init system (`/sbin/init`).
+
+The engine service runs as a systemd service named `engine`. Follow its log:
 
 [source,sh,role=execute]
 ----
-podman exec -it qm bash
+journalctl -f -u engine
+----
+
+Every few seconds the engine switches gear:
+
+[source,sh]
+----
+... localhost systemd-engine[660]: ENGINE: Reversing...
+... localhost systemd-engine[660]: ENGINE: Driving...
+... localhost systemd-engine[660]: ENGINE: Reversing...
+----
+
+NOTE: Right after boot you may also see a few `[error]` or `[warning]` lines about `/run/vsomeip`. They appear while the services start up and can be ignored.
+
+IMPORTANT: Press *Ctrl+C* to stop following the log.
+
+Now look at the processes of the demo applications:
+
+[source,sh,role=execute]
+----
+ps -ef | grep -E 'engine|radio|routing' | grep -v grep
+----
+
+You see the engine service, but also the radio service and the routing manager, even though those run inside the QM partition.
+From the root partition, you can see everything that runs on the system, including the processes in the QM partition.
+
+// TODO(dry run): confirm that the ps output above shows radio-service and routingmanagerd
+// from the QM partition, and add a sample output block.
+
+
+[#qmpartition]
+== The view from inside the QM partition
+
+You cannot log in to the QM partition directly. Because it is a container, you enter it with Podman:
+
+[source,sh,role=execute]
+----
+podman exec -it qm /bin/bash
 ----
 
 WARNING: The `-it` flags are required. Without them the command appears to succeed but leaves you in the
-host shell rather than inside the container, which is easy to miss.
+root partition shell rather than inside the QM partition, which is easy to miss.
 
-image::starter/11-qm-container.png[]
+Your prompt changes to `bash-5.2#`. You are now inside the QM partition.
 
-Type `exit` to leave the container shell and return to the host.
+The QM partition runs its own Podman with its own containers. List them:
+
+[source,sh,role=execute]
+----
+podman ps
+----
+
+[source,sh]
+----
+CONTAINER ID  IMAGE                       COMMAND               CREATED        STATUS        PORTS  NAMES
+a4ca2dc05...  localhost/auto-apps:latest  /usr/bin/dlt-daem...  2 minutes ago  Up 2 minutes         systemd-dlt
+66c315d78...  localhost/auto-apps:latest  /usr/bin/radio-se...  2 minutes ago  Up 2 minutes         systemd-radio
+5d343e699...  localhost/auto-apps:latest  /usr/bin/routingm...  2 minutes ago  Up 2 minutes         systemd-routingmanagerd
+----
+
+Here you find the radio service, the routing manager, and a DLT logging daemon (DLT is the standard logging format in automotive systems).
+They use the same `auto-apps` container image as the engine service in the root partition.
+
+Follow the radio's log:
+
+[source,sh,role=execute]
+----
+journalctl -f -u radio
+----
+
+[source,sh]
+----
+... systemd-radio[95]: RADIO: Playing song "Still Livin'" by Freddie Gibbs (on Radio Los Santos) 50% volume
+... systemd-radio[95]: RADIO: Playing song "I Can't Wait" by Young Scooter feat. Trinidad James (on Radio Los Santos) 50% volume
+----
+
+// TODO(dry run): the radio is meant to lower its volume while the engine reverses. In the
+// 2026-11-09 demo the volume stayed at 50%, possibly because of the missing SELinux rules.
+// If it works by the dry run, add a step that shows the volume change here.
+
+IMPORTANT: Press *Ctrl+C* to stop following the log.
+
+Now look at the processes again, this time from inside the QM partition:
+
+[source,sh,role=execute]
+----
+ps -ef
+----
+
+The picture is very different:
+
+- You only see the processes of the QM partition. The engine service and everything else in the root partition are invisible.
+- The QM partition has its own PID namespace: its own init system runs as PID 1, and the process IDs differ from the ones you saw in the root partition.
+
+// TODO(dry run): confirm that ps is available in the QM partition and add a sample output block.
+
+This is the isolation that makes mixed criticality possible. The root partition can observe and control the QM partition,
+but workloads in the QM partition cannot see or interfere with the safety-relevant workloads in the root partition.
+The only connection between the two is the one that was configured on purpose: a shared socket directory
+(`/run/vsomeip`) through which the services exchange SOME/IP messages.
+
+NOTE: In this demo image, SELinux runs in *permissive* mode: policy violations are logged but not blocked.
+A production RHIVOS system runs SELinux in *enforcing* mode, which adds another layer of protection between the partitions.
+
+
+[#leave]
+== Leave the device
+
+Leave the QM partition and return to the root partition:
+
+[source,sh,role=execute]
+----
+exit
+----
 
 IMPORTANT: Quit the serial console by *pressing `Ctrl+B` three times*.
 
-Your shell prompt will be restored to `jumpstarter ⚡remote ➤`.
+Your shell prompt changes back to `sc-demo ⚡qemu-exporter-0 ➤`. You are back in the Jumpstarter shell on your workspace.
 
-
-== Port forwarding and remote access
-
-NOTE: This section is optional and you can continue with section "Testing with Pytest" if you want to skip it.
-
-WARNING: Network access to the device is under investigation. In the 2026-11-04 dry run, connecting
-directly to the pod over SSH failed even with `sshd` running, and a cluster network policy is the suspected
-cause. The Jumpstarter port-forwarding route below is a different mechanism and was not re-tested in that
-session. Verify this section works before relying on it in front of participants.
-
-Sometimes your tests cannot be executed directly on the target device or the Exporter host.
-To support these use cases, Jumpstarter implements port forwarding, which allows you to interact 
-with services running on the target device from your local machine.
-
-To forward a remote service port such as the `ssh` to a local port, run the following command:
+Release the lease, so that the device is free for others:
 
 [source,sh,role=execute]
 ----
-j qemu ssh forward-tcp 9000 &
+exit
 ----
 
-This command will forward the remote `ssh` port (port 22) preconfigured in the exporter config to `localhost:9000` on your local machine. 
-
-Once port forwarding is started, you can run an `ssh` client from your local environment and execute commands on the 
-virtual device remotely, e.g. check cpu info:
-
-[source,sh,role=execute]
-----
-ssh -p 9000 -o StrictHostKeyChecking=no  \
-  -o UserKnownHostsFile=/dev/null \
-  root@localhost cat /proc/cpuinfo
-----
-
-When prompted for a password, enter:
-
-.Password
-[.no-copy-label]
-[source,text,role=execute,subs=attributes+]
-----
-password
-----
-
-
-[#jmptestingpytest]
-== Testing with Pytest
-
-While remotely connecting to a Jumpstarter Exporter to run tests is a huge step forward from traditional 
-methods of hardware testing, you can further improve your test procedures to be automated, repeatable, and reliable.
-
-You can use any testing framework with Jumpstarter, not only *Pytest*, but we recommend it due to its simplicity and popularity.
-
-=== About writing tests
-
-An example pytest script, that uses the Jumpstarter API looks like this:
-
-.test/test_on_hardware.py
-[source,python]
-----
-import logging
-import sys
-
-import pytest
-
-from jumpstarter_testing.pytest import JumpstarterTest
-
-
-log = logging.getLogger(__name__)
-
-
-class TestRHIVOSOnHardware(JumpstarterTest):
-    selector = "type=virtual"
-
-    def test_boot(self, client):
-        """Test the boot process of the device."""
-        log.info("Testing boot process")
-        client.power.cycle()
-        with client.console.pexpect() as console:
-            # uncomment this if you want to see the console in action while testing
-            # console.logfile_read = sys.stdout.buffer
-            console.expect_exact("login:", timeout=120)
-            console.sendline("root")
-            console.expect_exact("Password:", timeout=10)
-            console.sendline("password")
-            console.expect_exact("]#", timeout=10)
-    def test_uname(self, client):
-        with client.console.pexpect() as console:
-            console.sendline("uname -a")
-            console.expect_exact("]#", timeout=10)
-            print(console.before.decode())
-----
-
-Let's explore the script line by line.
-
-.import
-[source,python]
-----
-import logging
-import sys
-
-import pytest
-
-from jumpstarter_testing.pytest import JumpstarterTest
-----
-
-The first part of the script imports standard Python packages, as well as
-`pytest` and the `JumpstarterTest` helper from the `jumpstarter_testing` packages.
-
-
-.setup
-[source,python]
-----
-class TestRHIVOSOnHardware(JumpstarterTest):
-    selector = "type=virtual"
-----
-
-The actual test happens in class `TestRHIVOSOnHardware`, which is a subclass of `JumpstarterTest`.
-The `JumpstarterTest` class provides the required logic for connecting to an Exporter.
-To select which Exporter and device the test should run on, the `selector` class variable is used.
-
-
-.test-boot
-[source,python]
-----
-    def test_boot(self, client):
-        """Test the boot process of the device."""
-        log.info("Testing boot process")
-        client.power.cycle()
-        with client.console.pexpect() as console:
-            # uncomment this if you want to see the console in action while testing
-            # console.logfile_read = sys.stdout.buffer
-            console.expect_exact("login:", timeout=120)
-            console.sendline("root")
-            console.expect_exact("Password:", timeout=10)
-            console.sendline("password")
-            console.expect_exact("]#", timeout=10)
-----
-
-This is the first test case, which tests the boot process of the device.
-
-It first cycles the power of the device, then it connects to the console and waits for
-the login prompt, then sends the username and password to log in to the device.
-
-After logging in, it waits for the shell prompt to show up, indicating that the login
-was successful.
-
-.test-uname
-[source,python]
-----
-    def test_uname(self, client):
-        with client.console.pexpect() as console:
-            console.sendline("uname -a")
-            console.expect_exact("]#", timeout=10)
-            print(console.before.decode())
-----
-
-The second test case sends the `uname -a` command to the console and
-waits for the shell prompt to show up, then prints the output of the command.
-
-NOTE: The above test is basically the same steps you performed in the previous section "First boot".
-
-'''
-=== Running tests
-
-Now you can run the test script using pytest. The test scripts are located in the `tests` directory of the project.
-
-image::act4/test-sources.png[]
-
-You should still be in the remote Jumpstarter shell session:
-
-[,console]
-----
-rhas-starter ⚡qemu-exporter-0 ➤
-----
-
-TIP: If you are *NOT* inside the remote Jumpstarter shell session, run `jmp shell -l device=qemu` to lease a new Exporter. Then flash the device again with `j flasher flash oci://$DISKIMAGE`.
-
-Run the test script using pytest:
-
-[source,sh,role=execute]
-----
-pytest
-----
-
-You should see the test results:
-
-[,console]
-----
-rhas-starter ⚡qemu-exporter-0 ➤ pytest
-========================================================================= test session starts =========================================================================
-platform linux -- Python 3.12.9, pytest-8.3.5, pluggy-1.5.0
-rootdir: /projects/rhas-starter
-configfile: pytest.ini
-plugins: anyio-4.9.0, asyncio-0.26.0, cov-6.1.1
-asyncio: mode=Mode.STRICT, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
-collected 5 items
-
-tests/test_on_hardware.py::TestRHIVOSOnHardware::test_boot
----------------------------------------------------------------------------- live log call ----------------------------------------------------------------------------
-INFO     test_on_hardware:test_on_hardware.py:17 Testing boot process
-INFO     PowerClient:client.py:19 Starting power cycle sequence
-INFO     PowerClient:client.py:21 Waiting 2 seconds...
-INFO     PowerClient:client.py:24 Power cycle sequence complete
-PASSED
-tests/test_on_hardware.py::TestRHIVOSOnHardware::test_uname uname -a
-Linux demo 5.14.0-578.527.el9iv.aarch64 #1 SMP PREEMPT_RT Thu Apr 10 15:56:34 UTC 2025 aarch64 aarch64 aarch64 GNU/Linux
-[root@demo ~
-PASSED
-tests/test_on_hardware.py::TestRHIVOSOnHardware::test_podman_images SKIPPED (will test this once we build our app)
-tests/test_on_hardware.py::TestRHIVOSOnHardware::test_radio_service SKIPPED (will test this once we build our app)
-tests/test_on_hardware.py::TestRHIVOSOnHardware::test_radio_service_interaction SKIPPED (will test this once we build our app)
-
-==================================================================== 2 passed, 3 skipped in 18.82s ====================================================================
-----
+Your prompt is back to `(venv) sc-demo (main) $`.
 
 == Next
 
-You will notice that some of the tests are skipped, this is because we have not built our RHIVOS image yet. This will be covered in the next section.
+You have seen what runs on the image. Next you will find out how this image was built.

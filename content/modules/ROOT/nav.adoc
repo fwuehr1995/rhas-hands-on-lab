@@ -6,11 +6,11 @@
 
 * xref:activity-01.adoc[Getting started]
 
-* xref:activity-02.adoc[Application Development]
+* xref:activity-02.adoc[Booting a RHIVOS image]
 
-* xref:activity-03.adoc[Working with Jumpstarter]
+* xref:activity-03.adoc[Exploring the system]
 
-* xref:activity-04.adoc[Testing and Validation] 
+* xref:activity-04.adoc[How the image is built]
 
 * xref:wrapup.adoc[Conclusion]
 
