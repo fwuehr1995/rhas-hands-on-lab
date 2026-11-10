@@ -4,28 +4,13 @@ For your convenience, this page contains access information to all systems in yo
 
 == Lab Login
 
-[.no-copy-label]
-.Username
-[source,sh,role=execute,subs=attributes+]
-----
-{user}
-----
+Your instructor gives you a lab user, for example `user35`, and its password. Your workspace in Red Hat OpenShift Dev Spaces is already created for you.
 
-[.no-copy-label]
-.Password
-[source,sh,role=execute,subs=attributes+]
-----
-{password}
-----
+TIP: Log in in a *private browser window*. Cookies left over from another lab can sign you in with the wrong account.
+
+// TODO: add the URL of the shared scratchpad for copying text and debug output, once it is set up.
 
 == Application URLs
-
-=== Red Hat Developer Hub https://backstage-backstage.{openshift_cluster_ingress_domain}['link',window=_blank]
-
-[source,sh,role=execute,subs=attributes+]
-----
-https://backstage-backstage.{openshift_cluster_ingress_domain}
-----
 
 === Red Hat Dev Spaces https://devspaces.{openshift_cluster_ingress_domain}['link',window=_blank]
 
@@ -34,34 +19,62 @@ https://backstage-backstage.{openshift_cluster_ingress_domain}
 https://devspaces.{openshift_cluster_ingress_domain}
 ----
 
-=== GitLab https://gitlab-gitlab.{openshift_cluster_ingress_domain}['link',window=_blank]
-
-[source,sh,role=execute,subs=attributes+]
-----
-https://gitlab-gitlab.{openshift_cluster_ingress_domain}
-----
-
-=== Red Hat OpenShift https://console-openshift-console.{openshift_cluster_ingress_domain}['link',window=_blank]
+=== Red Hat Automotive Suite / OpenShift console https://console-openshift-console.{openshift_cluster_ingress_domain}['link',window=_blank]
 
 [source,sh,role=execute,subs=attributes+]
 ----
 https://console-openshift-console.{openshift_cluster_ingress_domain}
 ----
 
-== Jumpstarter Examples
+=== Lab repository
 
-=== List all Exporters
+Only needed if you have to delete and recreate your workspace.
+
+[source,sh,role=execute,subs=attributes+]
+----
+{lab_repo_url}
+----
+
+== Environment checks
+
+=== Check the image build service
+
+[source,sh,role=execute]
+----
+caib status
+----
+
+=== Check your OpenShift identity
+
+[source,sh,role=execute]
+----
+oc whoami
+----
+
+=== Authenticate to Jumpstarter
+
+[source,sh,role=execute]
+----
+jmp-login
+----
+
+NOTE: Copy the printed URL with *Ctrl+Shift+C*, open it in a browser, and click *Yes* on the
+*Grant Access to jumpstarter-cli* page.
+
+=== List all Exporters (also checks your Jumpstarter login)
 
 [source,sh,role=execute]
 ----
 jmp get exporters
 ----
 
+== Flash and boot a device
+
 === Lease an Exporter
 
 [source,sh,role=execute]
 ----
-jmp shell --selector type=virtual
+jmp shell -l device=qemu
 ----
 
 === List hardware interfaces exposed on the Exporter
@@ -71,14 +84,71 @@ jmp shell --selector type=virtual
 j
 ----
 
-=== Boot a virtual device
+=== List available OS images
 
 [source,sh,role=execute]
 ----
-./scripts/flash-prebuilt
+caib image list
+----
+
+=== Flash and boot the device
+
+[source,sh]
+----
+DISKIMAGE=<uri from caib image list>
+----
+
+[source,sh,role=execute]
+----
+j flasher flash oci://$DISKIMAGE
 ----
 
 [source,sh,role=execute]
 ----
 j power on && j console start-console
 ----
+
+Log in as `root` with password `password`.
+
+=== Leave the serial console
+
+Press *Ctrl+B* three times.
+
+=== Release the lease
+
+[source,sh,role=execute]
+----
+exit
+----
+
+== On the device
+
+=== List containers in the root partition
+
+[source,sh,role=execute]
+----
+podman ps
+----
+
+=== Follow the engine service log
+
+[source,sh,role=execute]
+----
+journalctl -f -u engine
+----
+
+=== Get a shell in the QM partition
+
+[source,sh,role=execute]
+----
+podman exec -it qm /bin/bash
+----
+
+=== Follow the radio service log (inside the QM partition)
+
+[source,sh,role=execute]
+----
+journalctl -f -u radio
+----
+
+Press *Ctrl+C* to stop following a log.

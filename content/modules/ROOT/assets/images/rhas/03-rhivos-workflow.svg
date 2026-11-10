@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1110" height="420" viewBox="0 0 1110 420" role="img" aria-label="Generic RHIVOS development workflow">
+<title>Generic RHIVOS development workflow</title>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6A6E73"/></marker></defs>
+<rect width="1110" height="420" fill="#FFFFFF"/>
+<rect x="145.0" y="62.0" width="130" height="56" rx="8" fill="#F2F2F2" stroke="#8A8D90" stroke-width="2"/>
+<text x="210" y="86.5" text-anchor="middle" font-family="'Red Hat Text','Red Hat Display','Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="500" fill="#151515">RHIVOS</text>
+<text x="210" y="103.5" text-anchor="middle" font-family="'Red Hat Text','Red Hat Display','Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="500" fill="#151515">headers</text>
+<rect x="285.0" y="62.0" width="130" height="56" rx="8" fill="#F2F2F2" stroke="#8A8D90" stroke-width="2"/>
+<text x="350" y="86.5" text-anchor="middle" font-family="'Red Hat Text','Red Hat Display','Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="500" fill="#151515">RHIVOS</text>
+<text x="350" y="103.5" text-anchor="middle" font-family="'Red Hat Text','Red Hat Display','Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="500" fill="#151515">libraries</text>
+<rect x="535.0" y="62.0" width="130" height="56" rx="8" fill="#F2F2F2" stroke="#8A8D90" stroke-width="2"/>
+<text x="600" y="86.5" text-anchor="middle" font-family="'Red Hat Text','Red Hat Display','Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="500" fill="#151515">Target OS</text>
+<text x="600" y="103.5" text-anchor="middle" font-family="'Red Hat Text','Red Hat Display','Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="500" fill="#151515">manifest</text>
+<rect x="675.0" y="62.0" width="130" height="56" rx="8" fill="#F2F2F2" stroke="#8A8D90" stroke-width="2"/>
+<text x="740" y="86.5" text-anchor="middle" font-family="'Red Hat Text','Red Hat Display','Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="500" fill="#151515">RHIVOS</text>
+<text x="740" y="103.5" text-anchor="middle" font-family="'Red Hat Text','Red Hat Display','Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="500" fill="#151515">packages</text>
+<rect x="15.0" y="222.0" width="130" height="56" rx="8" fill="#F2F2F2" stroke="#8A8D90" stroke-width="2"/>
+<text x="80" y="246.5" text-anchor="middle" font-family="'Red Hat Text','Red Hat Display','Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="500" fill="#151515">App source</text>
+<text x="80" y="263.5" text-anchor="middle" font-family="'Red Hat Text','Red Hat Display','Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="500" fill="#151515">code</text>
+<rect x="215.0" y="222.0" width="130" height="56" rx="8" fill="#FFFFFF" stroke="#EE0000" stroke-width="2"/>
+<text x="280" y="255.0" text-anchor="middle" font-family="'Red Hat Text','Red Hat Display','Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="500" fill="#151515">Secure build</text>
+<rect x="405.0" y="222.0" width="130" height="56" rx="8" fill="#FCE3E3" stroke="#EE0000" stroke-width="2"/>
+<text x="470" y="246.5" text-anchor="middle" font-family="'Red Hat Text','Red Hat Display','Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="500" fill="#151515">Container /</text>
+<text x="470" y="263.5" text-anchor="middle" font-family="'Red Hat Text','Red Hat Display','Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="500" fill="#151515">RPM</text>
+<rect x="605.0" y="222.0" width="130" height="56" rx="8" fill="#FFFFFF" stroke="#EE0000" stroke-width="2"/>
+<text x="670" y="246.5" text-anchor="middle" font-family="'Red Hat Text','Red Hat Display','Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="500" fill="#151515">Automotive</text>
+<text x="670" y="263.5" text-anchor="middle" font-family="'Red Hat Text','Red Hat Display','Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="500" fill="#151515">Image Builder</text>
+<rect x="785.0" y="222.0" width="130" height="56" rx="8" fill="#FCE3E3" stroke="#EE0000" stroke-width="2"/>
+<text x="850" y="255.0" text-anchor="middle" font-family="'Red Hat Text','Red Hat Display','Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="500" fill="#151515">OS image</text>
+<rect x="965.0" y="132.0" width="130" height="56" rx="8" fill="#FFFFFF" stroke="#151515" stroke-width="2"/>
+<text x="1030" y="165.0" text-anchor="middle" font-family="'Red Hat Text','Red Hat Display','Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="500" fill="#151515">Virtual device</text>
+<rect x="965.0" y="312.0" width="130" height="56" rx="8" fill="#FFFFFF" stroke="#151515" stroke-width="2"/>
+<text x="1030" y="345.0" text-anchor="middle" font-family="'Red Hat Text','Red Hat Display','Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="500" fill="#151515">Physical device</text>
+<path d="M210,118 L210,165 L350,165 L350,118" fill="none" stroke="#6A6E73" stroke-width="1.6"/>
+<path d="M280,165 L280,220" fill="none" stroke="#6A6E73" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M600,118 L600,165 L740,165 L740,118" fill="none" stroke="#6A6E73" stroke-width="1.6"/>
+<path d="M670,165 L670,220" fill="none" stroke="#6A6E73" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M145,250 L213,250" fill="none" stroke="#6A6E73" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M345,250 L403,250" fill="none" stroke="#6A6E73" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M535,250 L603,250" fill="none" stroke="#6A6E73" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M735,250 L783,250" fill="none" stroke="#6A6E73" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M915,250 L940,250" fill="none" stroke="#6A6E73" stroke-width="1.6"/>
+<path d="M940,160 L940,340" fill="none" stroke="#6A6E73" stroke-width="1.6"/>
+<path d="M940,160 L963,160" fill="none" stroke="#6A6E73" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M940,340 L963,340" fill="none" stroke="#6A6E73" stroke-width="1.6" marker-end="url(#a)"/>
+<rect x="20" y="389" width="22" height="14" rx="3" fill="#F2F2F2" stroke="#8A8D90" stroke-width="1.6"/>
+<text x="50" y="400" text-anchor="start" font-family="'Red Hat Text','Red Hat Display','Helvetica Neue',Arial,sans-serif" font-size="12.5" fill="#4D5258">Input / source</text>
+<rect x="176" y="389" width="22" height="14" rx="3" fill="#FFFFFF" stroke="#EE0000" stroke-width="1.6"/>
+<text x="206" y="400" text-anchor="start" font-family="'Red Hat Text','Red Hat Display','Helvetica Neue',Arial,sans-serif" font-size="12.5" fill="#4D5258">Build step / tool</text>
+<rect x="353" y="389" width="22" height="14" rx="3" fill="#FCE3E3" stroke="#EE0000" stroke-width="1.6"/>
+<text x="383" y="400" text-anchor="start" font-family="'Red Hat Text','Red Hat Display','Helvetica Neue',Arial,sans-serif" font-size="12.5" fill="#4D5258">Artifact</text>
+<rect x="467" y="389" width="22" height="14" rx="3" fill="#FFFFFF" stroke="#151515" stroke-width="1.6"/>
+<text x="497" y="400" text-anchor="start" font-family="'Red Hat Text','Red Hat Display','Helvetica Neue',Arial,sans-serif" font-size="12.5" fill="#4D5258">Target</text>
+</svg>

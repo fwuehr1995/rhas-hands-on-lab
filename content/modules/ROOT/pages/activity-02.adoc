@@ -1,126 +1,194 @@
-= Application Development
+= Booting a RHIVOS Image
 
 == Overview
-In this module you will learn how to develop, build, and test a simple automotive application using Red Hat OpenShift Dev Spaces and OpenShift Pipelines.
 
-The sample application is a simple `radio-service` that emulates a radio, regularly publishing information about the current track, the radio station, and volume level. 
-The `radio-client` application connects to the radio service and requests to turn it on or off, to change the radio station, and adjust the volume.
+In this activity, you take an operating system image that has already been built by the automated pipeline, and boot it on
+a virtual device through Jumpstarter:
 
-It demonstrates how typical automotive applications use https://some-ip.com/[SOME/IP,window=_blank] to communicate. The application is written in C++ and uses the https://cmake.org/[CMake,window=_blank] build system.
+- Lease a virtual device from Jumpstarter
+- Pick an image from the Cloud Automotive Image Builder
+- Flash the image onto the device, power it on, and log in
 
+Jumpstarter manages remote access to Exporters using *Leases*. A lease gives you exclusive access to an Exporter for a
+specified period of time. When you request a lease, the Jumpstarter Service finds a free Exporter that matches a label selector.
+Once the lease is granted, you work with the device in a session, just as if it were connected to your machine.
 
-[#appbuild]
-== Build the application
+Not only can Jumpstarter help automate hardware testing in CI pipelines, but as your project grows,
+Jumpstarter's remote access capabilities let you share limited hardware devices across
+geographically dispersed teams in a secure, controlled, and efficient manner.
 
-In the first step, you will build and test the application inside Red Hat OpenShift Dev Spaces.
-
-IMPORTANT: Click the *build* button at the bottom left of the window.
-
-image::app/00-build.png[]
-
-IMPORTANT: Choose to build with the GCC toolkit.
-
-image::app/01-kit.png[]
-
-NOTE: The build process involves creating a "build" directory, and calling cmake to generate the Makefile. Then, make is called to compile the source code into multiple executable files.
+NOTE: In this lab, everybody gets a virtual QEMU device. The same commands work with a physical board connected to an Exporter.
 
 
-[#apptest]
-== Test the application
+[#lease]
+== Lease a virtual device
 
-Once the application is built, you can test it.
-
-IMPORTANT: Click the *triangular button* at the bottom left of the window to run the application. Choose to run *radio-service*.
-
-image::app/02-build-finish.png[]
-
-
-image::app/03-run.png[]
-
-
-Once the `radio-service` is running, you will see output like the following in the terminal:
-
-[source,sh]
-----
-RADIO: Playing song "Upper Echelon" by Travi$ Scott feat. 2 Chainz & T.I. (on Radio Los Santos) 50% volume
-----
-
-
-Now start the `radio-client` to interact with the running `radio-service`. 
-
-IMPORTANT: First, split the terminal by clicking the split button on the right middle of the screen.
-
-image::app/05-split.png[]
-
-You will see the terminal being split into two halves, with the `radio-service` running on the left, and a new shell to the right.
-
-Start the *radio-client* by clicking the right half of the terminal and entering the following command:
+To lease a QEMU Exporter and open a session on it, run the following command in your terminal:
 
 [source,sh,role=execute]
 ----
-./radio-client
+jmp shell -l device=qemu
 ----
 
-image::app/06-run-client.png[]
+The `-l` parameter selects an Exporter by label. Every Exporter in this lab carries the labels
+`device=qemu,type=virtual`, so `device=qemu` matches any free one.
 
-image::app/07-client-running.png[]
+The lease is granted for 30 minutes, and is released automatically when you leave the shell.
+You keep using this lease in the next activity, so move on without long breaks.
 
-In the `radio-client`, press 
+TIP: Notice that your shell prompt changed to `sc-demo ⚡qemu-exporter-0 ➤`, naming the Exporter you were given. This is to remind you that you are inside a Jumpstarter shell session.
 
-- `+` or `-` to adjust the volume
-- `<SPACE>` to switch stations
-- `<ESC>` to pause or resume the radio. 
+NOTE: While you hold a lease, the shell periodically prints `Token expires in ... Will attempt auto-refresh.` This is expected and can be ignored.
 
-Observe the output in the `radio-service` terminal.
+To see the hardware interfaces of the Exporter you have leased, run the `j` command without parameters:
 
-IMPORTANT: When done with testing, press `q` to quit the radio-client application.
+[source,sh,role=execute]
+----
+j
+----
+
+You should see an output like this:
+
+[source,sh]
+----
+Usage: j [OPTIONS] COMMAND [ARGS]...
+
+  Generic composite device
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  console  Serial port client
+  flasher  Generic flasher interface
+  power    Generic power
+  qemu     Generic composite device
+----
+
+As the Exporter is connected to a virtual QEMU device, you can use these subcommands to interact with it:
+
+- flash a new image with `flasher`
+- control the power with `power`
+- access the serial console with `console`
+
+A physical device with a similar interface is used in exactly the same way.
 
 
-[#appmodify]
-== Modify the application 
+[#caibimagelist]
+== Pick an image
 
-Next, you will modify the application to add a new radio station and several new songs, and then repeat the build-test cycle.
+Images are built by the Cloud Automotive Image Builder service and kept in the cluster registry, the *artifact store*.
+List them:
 
-IMPORTANT: Click *src* in the file explorer to open the src folder.
+[source,sh,role=execute]
+----
+caib image list
+----
 
-image::app/08-src.png[]
+This lists every image the build service has produced, with its status, age, the service account that
+built it, and the registry URI.
 
-IMPORTANT: Click `radio-stations.cpp` to open the source file containing the radio stations and songs.
+// TODO(dry run): the image list is planned to be cleaned up and to carry a single,
+// human-readable image name. Once it does, replace the "most recent Completed" instruction
+// and the URI example below with that name.
 
-image::app/09-stations.png[]
+IMPORTANT: Copy the URI of the most recent image whose status is `Completed`. It looks like this:
 
-IMPORTANT: At the top of the file, remove the two commented lines.
+[source,sh,subs="+attributes"]
+----
+default-route-openshift-image-registry.{openshift_cluster_ingress_domain}/automotive-dev-operator-system/pr-build-validate-<id>:disk
+----
 
-image::app/10-songs-before.png[]
+TIP: Select the URI with the mouse and copy it with *Ctrl+Shift+C*.
 
-IMPORTANT: Scroll down to the bottom of the file, remove the two commented lines.
-
-image::app/12-stations-before.png[]
+NOTE: The subcommand is `image`, singular. `caib images list` is not a valid command.
 
 
-After finishing editing, click into the `radio-service` terminal and enter `CTRL+C` to stop the running radio-service application.
+[#flash]
+== Flash and boot the device
 
-Re-build and re-start the application by clicking the *triangular button* at the bottom left of the window, 
-then re-start `radio-client` again on the right half of the terminal. 
+First store the image URI in a variable, pasting the URI you copied:
 
-TIP: Try switching stations by pressing `<SPACE>`, and find the newly added *Red Hat Summit Radio* station.
+[source,sh]
+----
+DISKIMAGE=<paste the URI here>
+----
 
-== Clean up
+TIP: Type `DISKIMAGE=` yourself and paste the URI directly after the `=`, without spaces.
 
-Before you continue, close the terminal windows.
+Then flash it onto your device:
 
-IMPORTANT: Click the *Trash can* icons on the lower right of the window to close the terminals.
+[source,sh,role=execute]
+----
+j flasher flash oci://$DISKIMAGE
+----
 
-image::app/19-cleanup.png[]
+The image is pulled from the registry and streamed straight to the device — there is no intermediate file.
+The whole operation takes only a few seconds.
 
-Now you should only see the code editor window.
+The flash is finished when you see:
 
-image::app/20-editor.png[]
+[source,sh]
+----
+Result: FLASH_COMPLETED
+----
+
+image::starter/08-image-list-lease.png[]
+
+Now power on the device and attach to its serial console to watch it boot:
+
+[source,sh,role=execute]
+----
+j power on && j console start-console
+----
+
+image::starter/09-flash-and-boot.png[]
+
+NOTE: During boot you may see messages such as `ConvertPages: failed to find range` or `Initramfs unpacking failed: Decoding failed`. These are known cosmetic errors and do not affect the lab.
+
+The system identifies itself as `Automotive Stream Distribution 10` (AutoSD, the upstream of RHIVOS) and shows a login prompt.
+Log in with the following credentials:
+
+.Username
+[.no-copy-label]
+[source,text,role=execute,subs=attributes+]
+----
+root
+----
+
+.Password
+[.no-copy-label]
+[source,text,role=execute,subs=attributes+]
+----
+password
+----
+
+TIP: Your shell prompt changes to `[root@localhost ~]#`. This is to remind you that you are now on the serial console of the virtual device.
+
+Check the system architecture:
+
+[source,sh,role=execute]
+----
+uname -m
+----
+
+It prints `aarch64`: this is an ARM based device, just like most automotive ECUs. The same image can also be flashed onto a physical ARM board.
+
+.Excursion: from the virtual device to a real board
+****
+Because the image is built for ARM, it is not limited to virtual machines. Your instructors will show the same kind of image
+running on a Texas Instruments ARM SoC board, a platform close to what is used in vehicles today. With a board connected to a
+Jumpstarter Exporter, leasing, flashing, and booting work exactly as you just did, only the Exporter label changes.
+
+This excursion is a demonstration only. It is not part of your hands-on steps.
+****
+
+image::starter/10-root-shell.png[]
+
+NOTE: This image is a classic, writable disk image (qcow2), not a read-only image-mode (bootc) image. Any change you make inside the running system is lost the next time you flash the device.
+
+Stay logged in. In the next activity you will explore this system.
 
 == Next
 
-Now that you completed the "local" development workflow, you can explore some Jumpstarter capabilities including:
-
-- Interacting with Jumpstarter Exporters from the command line
-- Writing test cases for your application
-- Flashing the application to a target device
+Your RHIVOS image is up and running. Next you will look at the applications running on it, and at how the partitions keep them apart.

@@ -1,195 +1,201 @@
-= Testing and Validation
+= How the Image Is Built
 
 == Overview
 
-While Red Hat OpenShift Dev Spaces provides a consistent environment for developing, building, and testing automotive applications, comprehensive validation 
-requires testing on virtual or physical hardware. This additional testing ensures:
+The image you booted was not built by hand. It was produced by an automated pipeline on OpenShift, following the
+xref:intro-rhas.adoc#rhivosworkflow[workflow from source code to the device]:
 
-- System stability
-- Performance optimization
-- Compatibility across target platforms
+. A change is pushed to the lab repository.
+. OpenShift Pipelines builds the application and packages it as an RPM.
+. The Automotive Image Builder composes the RPM, the RHIVOS packages, and the application containers into an OS image, as described by the image manifest.
+. Jumpstarter flashes the image onto a virtual device, and automated tests check that it boots and that the application works.
 
-Before building a production-ready RHIVOS image, you must verify that your application functions correctly in a cloud environment. 
+In this activity, you look at the two files in the lab repository that drive this process: the image manifest and the pipeline definition.
+You only read them; you do not need to change anything.
 
-After that, you can build a RHIVOS image with the modified application embedded, preparing it for end-to-end testing in
-virtualized hardware environments using Jumpstarter.
 
-NOTE: The following activity builds upon activity "Application Development", where you modified the application code.
+[#manifest]
+== The image manifest
 
-[#test-app]
-== Enable tests
+The contents of the image are declared in a single file. Open `manifests/auto-app.aib.yml` in the editor.
 
-Before committing your changes to the source code repository, you need to enable some test cases 
-that will be run against the application later in the pipeline.
+The `content` section describes the root partition. It lists the RPM repositories to pull from and the packages to install:
 
-IMPORTANT: Open `tests/test_on_hardware.py` and remove the three code annotations.
+[source,yaml]
+----
+content:
+  repos:
+    ...
+    - id: local
+      baseurl: file:///workspace/export/
+      priority: 6
+  rpms:
+    - auto-app
+    - podman
+    - qm
+    - auto-apps
+    - dlt-daemon
+    - vsomeip3-routingmanager
+    ...
+----
 
-image::app/14-enable-test.png[]
+- `qm` installs the QM partition you explored in the previous activity.
+- `auto-app` is the small C++ application in the `src` directory of the lab repository. The pipeline builds it into an RPM
+  and places it in `/workspace/export`, which the `local` repository points to.
 
-The code should look like this when you are done:
+The `container_images` entry pulls the `auto-apps` container image, which contains the engine, radio, and routing manager services,
+from a container registry and embeds it in the image:
 
-image::app/14-enable-test-done.png[]
+[source,yaml]
+----
+  container_images:
+    - source: quay.io/shetze/auto-apps
+      tag: latest
+      name: localhost/auto-apps
+----
 
-Before removing the code annotations, the test cases only covered the RHIVOS image, verifying that it is booting correctly.
-The additional test cases test the radio application itself.
+This is why you saw the image name `localhost/auto-apps` in `podman ps`: the container is already part of the OS image, so the
+device does not need network access to start its applications.
 
-The first test is to check if the container image of the apps is present:
+Each containerized application is started by a systemd *Quadlet* file, injected into the image through the `add_files` section.
+This is the engine service you saw in the root partition:
+
+[source,yaml]
+----
+  add_files:
+    ...
+    - path: /etc/containers/systemd/engine.container
+      text: |
+        [Unit]
+        Description=engine service container (asil-to-qm)
+        Requires=routingmanagerd.service
+        After=routingmanagerd.service
+
+        [Container]
+        Image=localhost/auto-apps
+        Network=none
+        ...
+        Exec=/usr/bin/engine-service
+----
+
+The `qm` section further down describes the QM partition in the same way. It has its own packages, its own copy of the
+`auto-apps` container, and its own Quadlet files, such as `radio.container` for the radio service:
+
+[source,yaml]
+----
+qm:
+  content:
+    ...
+    add_files:
+      - path: /etc/containers/systemd/radio.container
+        text: |
+          [Unit]
+          Description=radio service container (asil-to-qm)
+
+          [Container]
+          Image=localhost/auto-apps
+          ...
+          Exec=/usr/bin/radio-service
+----
+
+NOTE: All file contents are written inline with `text:`, so the complete image definition is in one file.
+Files that the Automotive Image Builder should take from the workspace, such as the `auto-app` RPM, must be placed in
+`/workspace/export`, where the builder can see them.
+
+// TODO(dry run): Michael is verifying whether files copied to /workspace/export can also be
+// added with source_path:. Update the note above with the result.
+
+Finally, the `auth` section sets the root password you used to log in. The manifest also sets SELinux to permissive mode,
+which you saw in the previous activity.
+
+
+[#pipeline]
+== The build pipeline
+
+The pipeline is defined as code in the repository, in `.tekton/pr-build-validate.yaml`. Open it in the editor.
+
+https://pipelinesascode.com/[Pipelines as Code,window=_blank] watches the repository. Every push to the `main` branch
+starts a new run of this pipeline, named `pr-build-validate-<id>`. This is the name you saw in the image URI in `caib image list`.
+
+The pipeline performs the following tasks:
+
+- `setup-jmp`: Prepares a Jumpstarter client for the pipeline.
+- `clone-repo`: Clones the repository at the commit that was pushed.
+- `get-lease`: Requests a Jumpstarter lease on a virtual device (`type=virtual`, `device=qemu`) — the same kind of device you leased by hand.
+- `setup-workspace`: Prepares a build workspace on the Automotive Image Builder service.
+- `build-rpm`: Builds the `auto-app` RPM by running `make build-rpm-workspace`, which places it in `/workspace/export`.
+- `build-os`: Builds the qcow2 image for the `qemu` target and the `arm64` architecture from `manifests/auto-app.aib.yml`, and stores it in the registry.
+- `flash`: Flashes the new image to the leased device with `j flasher flash` — the same command you used.
+- `validate`: Runs the tests in `tests/boot_test.py` against the running device.
+- `cleanup`: Always runs at the end, releases the lease, and returns the device to the pool.
+
+Open `tests/boot_test.py` to see what the `validate` task checks. The test powers on the device, logs in on the serial console
+with the same credentials you used, and checks that the `auto-app` application prints `Hello from AutoSD!`:
 
 [source,python]
 ----
-    def test_podman_images(self, client):
+class TestBootProcess(JumpstarterTest):
+    selector = "type=qemu"
+
+    def test_boot(self, client):
+        client.power.on()
         with client.console.pexpect() as console:
-            console.sendline("podman images")
-            console.expect_exact("]#", timeout=10)
-            assert "localhost/app" in console.before.decode()
-----
+            console.expect_exact("login:", timeout=60)
+            console.sendline("root")
+            ...
 
-The second test is to check if the radio app is running as a system service:
-
-[source,python]
-----
-    def test_radio_service(self, client):
+    def test_auto_app(self, client):
         with client.console.pexpect() as console:
-            console.sendline("systemctl status --no-pager radio.service")
-            console.expect_exact("]#", timeout=10)
+            console.sendline("auto-app")
+            console.expect_exact("Hello from AutoSD!", timeout=30)
 ----
 
-The third test is to interact with the radio service, and see if it can change the volume.
+The test uses the Jumpstarter Python API and https://docs.pytest.org/en/stable/[pytest,window=_blank]. The steps you performed by hand in the
+previous activities, such as leasing, flashing, powering on, and logging in, are exactly what the pipeline does automatically for every change.
 
-[source,python]
+This is the point of the Red Hat Automotive Suite: every change is built into a complete OS image and tested on a device,
+inside the normal development cycle. Today the device is a virtual QEMU machine. Swap the Exporter label, and the same
+pipeline flashes and tests a physical ECU.
+
+// TODO(dry run): if the automated user setup also creates a buildspace (pipeline namespace) for every
+// user, add a step to view the pipeline runs in the OpenShift console:
+// Developer perspective -> Pipelines, project buildspace-<...>.
+
+
+[#bonus]
+== Optional: build the application yourself
+
+NOTE: This section is optional. Do it if you have time left.
+
+The `auto-app` application can also be built directly in your workspace, without the pipeline. Your workspace already
+contains the compiler and build tools.
+
+Build the application:
+
+[source,sh,role=execute]
 ----
-    def test_radio_service_interaction(self, client):
-        with client.console.pexpect() as console:
-            console.sendline("podman exec -i systemd-radio radio-client")
-            console.expect_exact("Connecting to radio service", timeout=10)
-
-            # test changing volume
-            console.sendline("+" * 10)
-            console.expect_exact("Volume:  [#####################]", timeout=10)
-            console.sendline("-" * 10)
-            console.expect_exact("Volume:  [                     ]", timeout=10)
-            console.sendline("+" * 5)
-            console.expect_exact("Volume:  [##########           ]", timeout=10)
-
-            console.sendline("q")
-            console.expect_exact("]#", timeout=10)
+make build-local
 ----
 
-[#container]
-== Container image build
+Then run it:
 
-Now that all the changes are done, you can commit the changes to the source code repository.
+[source,sh,role=execute]
+----
+./bin/auto-app
+----
 
-First, you need to create a new branch and commit the changes.
+[source,sh]
+----
+Hello from AutoSD!
+Version: 0.1 (a571ff2)
+----
 
-IMPORTANT: Open the branch selector menu by clicking the *main* button in the status bar footer at the bottom left of the screen.
+This is the same program the `validate` task runs on the device. A cloud workspace like this one gives every developer
+the same, ready-to-use build environment, without installing a toolchain on their own laptop.
 
-image::app/14-branch.png[]
-
-IMPORTANT: In the input box, enter *develop*. Then, select *Create new branch*.
-
-image::app/15-branch-create.png[]
-
-WARNING: Make sure the button on the bottom left of the screen now says *develop*, the name of the newly created branch.
-
-IMPORTANT: Click the *Source Control* button in the left sidebar to open the source control tab.
-
-image::app/16-branch-created.png[]
-
-IMPORTANT: In the input box, put `"add new radio station"` as the commit message, then click *Commit*.
-
-image::app/17-commit.png[]
-
-IMPORTANT: Click the *Publish Branch* button to push the new changes to the code repository.
-
-image::app/18-push.png[]
-
-After the changes are pushed to the code repository, a Red Hat OpenShift Pipelines `pipeline run` is triggered. 
-This pipeline run builds the application and creates a new container image.
-
-The resulting container image is pushed to the enterprise container registry, https://www.redhat.com/en/technologies/cloud-computing/quay[Red Hat Quay,window=_blank].
-
-It is also deployed to its own namespace on the OpenShift cluster. As a developer, you could now do further testing or debugging, without having to rebuild the RHIVOS image.
-
-To check the progress of the pipeline, switch to the
-https://backstage-backstage.{openshift_cluster_ingress_domain}/catalog/default/component/{user}-jumpstarter-lab/ci[Red Hat Developer Hub dashboard,window=_blank].
-
-
-[#merge]
-== Test pipeline
-
-Now that you have a container image, you can start the process of building the RHIVOS image. 
-
-The build process is triggered by creating a *"Merge Request"* in GitLab. Merge requests are a great way to propose changes to the codebase. They allow for code reviews, discussion on changes 
-and automated testing before merging changes into the main branch.
-
-Switch to the https://backstage-backstage.{openshift_cluster_ingress_domain}/catalog/default/component/{user}-jumpstarter-lab/[Red Hat Developer Hub dashboard,window=_blank] and click on the *View source* button to navigate to the GitLab interface.
-
-image::act3/01-go-to-gitlab.png[]
-
-IMPORTANT: In GitLab, select the `develop` branch and click on the *New* button,
-
-image::act3/02-create-mr.png[]
-
-IMPORTANT: To create a merge request, click on the *Create Merge Request* button
-
-image::act3/03-create-mr-2.png[]
-
-Creating a merge request triggers a pipeline that builds and tests the RHIVOS image. It is defined in `.tekton/tasks/pr-build-test.yaml`. 
-You can see the pipeline running in the GitLab interface.
-
-image::act3/04-mr-pipeline-running.png[]
-
-If you switch back to the https://backstage-backstage.{openshift_cluster_ingress_domain}/catalog/default/component/{user}-jumpstarter-lab/ci[Red Hat Developer Hub dashboard,window=_blank], you can also see the pipeline running there.
-
-image::act3/05-pipeline-details-backstage.png[]
-
-image::act3/06-pipeline-details.png[]
-
-Looking at the pipeline in detail, it performs the following tasks:
-
-- `fetch-repository`: Clones the repository and checks out the *develop* branch.
-- `prepare-jumpstarter-config`: Prepares the Jumpstarter configuration files for authenticating to the Jumpstarter service.
-- `build-container`: Builds and pushes the container image with your application.
-- `tag-container`: Tags the container image as *latest*.
-- `prepare-build`: Configures the automotive image builder, based on the *.aib-ci.yaml* configuration file.
-- `automotive-image-builder`: Builds the RHIVOS image using the *automotive-image-builder* tool, which is a part of the Red Hat In-Vehicle OS (RHIVOS) project.
-- `create-jumpstarter-lease`: Requests and waits for a Jumpstarter exporter lease. The leased device (or virtual device) will be used for testing in the following tasks.
-- `flash-with-jumpstarter`: Flashes the RHIVOS image to the leased device.
-- `test-with-jumpstarter`: Runs the defined test cases in the *tests* directory of the project.
-- `release`: Ends the lease and releases the device back to pool of available devices.
-- `s3-upload`: Uploads the RHIVOS image to an *S3 bucket* for interactive use.
-
-Once the pipeline is finished, you can see the results reported back to GitLab:
-
-image::act3/07-mr-ready.png[]
-
-
-[#release]
-== Release pipeline
-
-Once the test pipeline has finished, you can start the release workflow, assuming that all the tests have passed.
-
-To start the release workflow, you must merge the changes on the *develop* branch into the *main* branch. 
-This triggers the release pipeline, which is defined in `.tekton/tasks/pr-build-release.yaml`. 
-
-The release pipeline is similar to the test pipeline, but it focuses on releasing the OS image to actual hardware:
-
-- Builds the production-ready RHIVOS image optimized for a specific hardware platform (see NOTES below)
-- Uses Jumpstarter to flash the image directly to the physical hardware
-- Uses Jumpstarter to run the defined test cases on the physical hardware
-
-NOTE: The release pipeline focuses on hardware testing rather than virtual testing, assuming all validation has been completed in the development pipeline. 
-
-TIP: A good alternative is to always use physical devices on merge requests if your lab has sufficient resources. This way you can validate the code on hardware before merging it to the main branch.
-
-NOTE: Due to the limited availability of physical hardware in this lab, we will only show this on screen.
-
-Merging into *main* can be done by clicking on the *Merge* button in the merge request page:
-
-image::act3/08-merge-mr.png[]
+// TODO(dry run): verify that make build-local works in the pre-provisioned workspace. If the
+// workspace runs on arm64 (uname -m), add that it builds natively for the target, without cross-compiling.
 
 == Next
 
-Now that you completed the development workflow, let’s recap what you have learned.
-
+Now that you have walked through the development workflow, let's recap what you have learned.

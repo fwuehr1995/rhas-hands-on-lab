@@ -61,4 +61,4 @@ You can also find all the https://github.com/jumpstarter-dev/jumpstarter[source 
 
 == Next
 
-Now that you have a basic understanding of the Red Hat Automotive Development Platform and how Jumpstarter works, you’re ready to dive into the lab activities.
+Now that you have a basic understanding of the Red Hat Automotive Suite and how Jumpstarter works, you’re ready to dive into the lab activities.
