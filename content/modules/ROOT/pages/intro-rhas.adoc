@@ -56,11 +56,9 @@ image::rhas/01-architecture.png[]
 
 Building software for RHIVOS follows the same basic steps, whether you do it by hand or fully automated:
 
-// Slide 4 of the internal "RHAS - System Architecture" deck. The slide is marked
-// "Confidential: Red Hat associate and NDA partner use only", so the image is not
-// checked in. Add it as rhas/03-rhivos-workflow.png and uncomment the line below
-// only if this guide is not published publicly.
-// image::rhas/03-rhivos-workflow.png[Generic RHIVOS development workflow]
+// Diagram redrawn after slide 4 of the RHAS system architecture deck.
+.Generic RHIVOS development workflow
+image::rhas/03-rhivos-workflow.svg[Generic RHIVOS development workflow: app source code, secure build, container or RPM, Automotive Image Builder, OS image, virtual and physical device]
 
 . *Application build* - Your application source code is compiled in a secure build against the RHIVOS headers and libraries.
   The result is packaged as a container image or an RPM package.
@@ -70,8 +68,9 @@ Building software for RHIVOS follows the same basic steps, whether you do it by 
 
 The Red Hat Automotive Suite automates this flow on OpenShift:
 
-// Slide 5 of the same deck - same restriction as above.
-// image::rhas/04-app-workflow.png[Generic automotive app development workflow]
+// Diagram redrawn after slide 5 of the RHAS system architecture deck.
+.Generic automotive app development workflow
+image::rhas/04-app-workflow.svg[Generic automotive app development workflow: code repository, app and OS build pipelines, artifact store, Jumpstarter flashing a virtual machine or a device under test]
 
 . A developer starts from a template, then commits code to a repository or opens a merge request.
 . An *app build pipeline* builds the application into a container image or RPM and stores it in an *artifact store*,
@@ -80,9 +79,12 @@ The Red Hat Automotive Suite automates this flow on OpenShift:
   which is stored in the artifact store as well.
 . *Jumpstarter* takes the image from the artifact store and flashes it onto a virtual machine or a physical device under test (DuT, often an SoC board).
 
-In this lab, you follow the second half of this flow: you take an image that the pipeline has already built from the
-artifact store, flash it onto a virtual device with Jumpstarter, and look inside. In the last activity, you walk back through
-the manifest and the pipeline that produced it.
+In this lab, you follow the lower half of this flow: you take an image that the pipeline has already built from the
+artifact store, flash it onto a virtual machine with Jumpstarter, and look inside. In the last activity, you walk back through
+the manifest and the OS build pipeline that produced it.
+
+The path to a physical device under test uses the same image and the same Jumpstarter commands. Your instructors show it
+in a short excursion on a real ARM SoC board.
 
 [#workflow]
 == Development workflow
