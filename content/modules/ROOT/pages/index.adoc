@@ -18,10 +18,11 @@ to build and test every change automatically.
 This is a guided lab. You do not have to write code: you follow the steps and see each part of the
 platform in action.
 
-* Log in to your prepared workspace and connect it to the build service and to Jumpstarter
+* Log in to your personal workspace and connect it to the build service and to Jumpstarter
 * Lease a virtual device, flash a RHIVOS image onto it, and boot it
 * Explore the running system: the safety-relevant root partition, the QM partition, and the containerized applications in both
 * See how SELinux labels control which applications may communicate across the partitions
+* Let an application in the QM partition run out of memory, and see that the safety-relevant applications are not affected
 * Find out how the image you booted was built: the image manifest and the automated build pipeline
 
 == How the lab runs
@@ -31,7 +32,7 @@ platform in action.
 . *Hands-on* - You work through the lab activities in your own workspace, at your own pace. Instructors are in the room to help.
   This part takes about 60 minutes.
 . *Demonstrations* - Your instructors show, on the projector, what does not fit into a hands-on lab: a change running
-  through the build pipeline, the same image on a physical ARM board, and freedom from interference under load.
+  through the build pipeline, the same image on a physical ARM board, and freedom from interference under CPU load.
 
 Sections marked *Bonus* are optional. Skip them if you are short on time, and come back to them later.
 

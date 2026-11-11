@@ -53,16 +53,19 @@ SELinux labels. The only connections between the partitions are the ones that we
 The image you boot in this lab runs a small demo application, split across both partitions:
 
 .Demo applications in the partitions of a RHIVOS image
-image::rhas/05-partitions.svg[Root partition with the engine service, QM partition with the radio service, routing manager, and DLT daemon, connected through shared vsomeip sockets]
+image::rhas/05-partitions.svg[Root partition with the engine service and the FFI server, QM partition with a 20% memory limit, running the radio service, routing manager, DLT daemon, and FFI client, connected through shared sockets in /run/ipc]
 
 - The *engine service* simulates the drivetrain. It is safety-relevant and runs in the root partition.
 - The *radio service* simulates the infotainment radio. When the vehicle reverses, it must turn its volume down, so that
   warning sounds can be heard. It runs in the QM partition.
 - The *routing manager* passes messages between them, using the SOME/IP protocol over shared sockets. Only applications
   with the right SELinux label may use these sockets.
+- The *FFI client* in the QM partition is a test application that uses up more and more memory. It reports its memory
+  use to the *FFI server* in the root partition. The QM partition may use at most 20% of the memory, so the client hits
+  that limit long before it can affect the root partition.
 
 In the lab activities, you will boot this image, look at the applications from each side, listen to the radio turning
-itself down, and find out how the image was built with the *Automotive Image Builder*.
+itself down, let the FFI client run out of memory, and find out how the image was built with the *Automotive Image Builder*.
 
 == Next
 
