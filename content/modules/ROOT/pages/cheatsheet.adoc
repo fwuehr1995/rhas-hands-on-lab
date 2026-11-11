@@ -4,7 +4,8 @@ For your convenience, this page contains access information to all systems in yo
 
 == Lab Login
 
-Your instructor gives you a lab user, for example `user35`, and its password. Your workspace in Red Hat OpenShift Dev Spaces is already created for you.
+Your lab user, for example `user35`, is on the slip of paper you got at the start. Your instructor tells you the initial
+password. On your first login, you set your own password. Your workspace in Red Hat OpenShift Dev Spaces is already created for you.
 
 TIP: Log in in a *private browser window*. Cookies left over from another lab can sign you in with the wrong account.
 

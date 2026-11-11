@@ -24,6 +24,11 @@ NOTE: This is information that you should know, but it is not critical for the s
 
 TIP: This is a tip that will help you complete the lab.
 
+Sections marked *Bonus* are not part of the core lab. Do them only if you have time left, during the lab or afterwards.
+
+Some parts of the lab are shown by your instructors on the projector, such as a change running through the build
+pipeline. They are marked as *Demonstration* and are not part of your hands-on steps.
+
 
 == Tips for working with the lab environment
 
@@ -43,7 +48,11 @@ terminal does not have the focus, the browser handles the keys instead.
 [#login]
 == Log in to Red Hat OpenShift Dev Spaces
 
-You do not need to register. Your instructor gives you a lab user, for example `user35`, and its password.
+You do not need to register. At the start of the lab, you get a slip of paper with your lab user, for example `user35`.
+Your instructor tells you the initial password, which is the same for everybody.
+
+// TODO(provisioning): confirm the user naming scheme (userN?) used by the provisioning
+// playbook, so that the printed slips match.
 
 IMPORTANT: Open Red Hat OpenShift Dev Spaces in a *private browser window*:
 
@@ -53,7 +62,13 @@ WARNING: Use a private window. If your browser already holds cookies for `opentl
 you may be signed in with those stale credentials instead of your lab user, and the rest
 of this lab will fail in confusing ways.
 
-IMPORTANT: Choose *Log in with OpenShift*, log in with your lab user and password, and approve the permission request when prompted.
+IMPORTANT: Choose *Log in with OpenShift*, log in with your lab user and the initial password, and approve the permission request when prompted.
+
+IMPORTANT: On your first login, you are asked to set a new password. Choose one you can remember for the rest of
+the lab. From now on, the lab user is yours alone: nobody else can log in with it, even by mistake.
+
+// TODO(provisioning): add a screenshot of the Keycloak "update password" page once the
+// provisioning sets the required action for the lab users.
 
 
 [#devspaces]
