@@ -88,11 +88,15 @@ caib image list
 This lists every image the build service has produced, with its status, age, the service account that
 built it, and the registry URI.
 
-// TODO(dry run): the image list is planned to be cleaned up and to carry a single,
+// TODO(image): the image list is planned to be cleaned up and to carry a single,
 // human-readable image name. Once it does, replace the "most recent Completed" instruction
-// and the URI example below with that name.
+// and the URI example below with that name. In the last test run, the list also showed
+// Failed pipeline runs and an ffi-demo image, which participants must not pick. Also, the
+// instructor's pipeline demo (activity-04) adds a newer pr-build-validate image, which slower
+// participants would then pick here. A fixed image name avoids both problems.
 
-IMPORTANT: Copy the URI of the most recent image whose status is `Completed`. It looks like this:
+IMPORTANT: Copy the URI of the most recent image whose name starts with `pr-build-validate` and whose status is `Completed`.
+Skip images with any other status, and images with other names. It looks like this:
 
 [source,sh,subs="+attributes"]
 ----
