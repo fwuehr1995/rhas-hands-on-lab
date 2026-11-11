@@ -105,8 +105,13 @@ Files that the Automotive Image Builder should take from the workspace, such as 
 // TODO(dry run): Michael is verifying whether files copied to /workspace/export can also be
 // added with source_path:. Update the note above with the result.
 
-Finally, the `auth` section sets the root password you used to log in. The manifest also sets SELinux to permissive mode,
-which you saw in the previous activity.
+Finally, the `auth` section sets the root password you used to log in.
+
+// TODO(selinux): an earlier version of the manifest set SELinux to permissive mode. activity-03 now
+// explains the radio-client failure with SELinux labels. Check the current manifest and
+// getenforce on the device, and either mention the SELinux mode here again or drop this TODO.
+// Note: the failing local radio-client logged TCP connects to 10.88.0.1:31000 (podman network),
+// not the /run/ipc/vsomeip sockets, which points to a config difference rather than SELinux.
 
 
 [#pipeline]

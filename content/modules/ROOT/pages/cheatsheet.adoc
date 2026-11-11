@@ -138,6 +138,22 @@ podman ps
 journalctl -f -u engine
 ----
 
+Press *Ctrl+C* to stop following a log.
+
+=== Show all processes with their SELinux labels
+
+[source,sh,role=execute]
+----
+ps axfZ
+----
+
+=== List the communication sockets shared between the partitions
+
+[source,sh,role=execute]
+----
+ls -l /run/ipc/vsomeip/
+----
+
 === Get a shell in the QM partition
 
 [source,sh,role=execute]
@@ -145,11 +161,20 @@ journalctl -f -u engine
 podman exec -it qm /bin/bash
 ----
 
-=== Follow the radio service log (inside the QM partition)
+Leave it again with `exit`.
+
+=== Start the radio client (inside the QM partition)
 
 [source,sh,role=execute]
 ----
-journalctl -f -u radio
+podman exec -it systemd-radio radio-client
 ----
 
-Press *Ctrl+C* to stop following a log.
+Volume: *+* / *-*, next station: *SPACE*, radio on/off: *ESC*, quit: *Q*.
+
+=== List the processes of the QM partition (inside the QM partition)
+
+[source,sh,role=execute]
+----
+ps axl
+----
