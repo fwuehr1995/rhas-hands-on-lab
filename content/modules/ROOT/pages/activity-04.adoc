@@ -102,7 +102,7 @@ NOTE: All file contents are written inline with `text:`, so the complete image d
 Files that the Automotive Image Builder should take from the workspace, such as the `auto-app` RPM, must be placed in
 `/workspace/export`, where the builder can see them.
 
-// TODO(dry run): Michael is verifying whether files copied to /workspace/export can also be
+// TODO(dry run): verify whether files copied to /workspace/export can also be
 // added with source_path:. Update the note above with the result.
 
 Finally, the `auth` section sets the root password you used to log in.
@@ -167,10 +167,47 @@ pipeline flashes and tests a physical ECU.
 // Developer perspective -> Pipelines, project buildspace-<...>.
 
 
-[#bonus]
-== Optional: build the application yourself
+[#pipelinedemo]
+== Demonstration: a change runs through the pipeline
 
-NOTE: This section is optional. Do it if you have time left.
+NOTE: This part is shown by your instructors on the projector. You do not push changes yourself: everybody would need
+their own repository and access token, and 50 pipeline runs at once would overload the shared lab cluster.
+
+Your instructor makes a small change in the lab repository, commits it, and pushes it to the `main` branch. You see:
+
+. Pipelines as Code notices the push and starts a new `pr-build-validate-<id>` run.
+. The run works through the tasks you just read about: it builds the RPM, builds the OS image, leases a virtual device,
+  flashes the image, and runs the boot test.
+. When the run is finished, the new image appears in the artifact store.
+
+A complete run takes about 10 to 12 minutes. This is the turnaround time for a full operating system image, built and
+tested on a device, for every single change.
+
+// TODO(dry run): decide which change the instructor pushes (for example a new version string in
+// auto-app), so that the bonus step below can show the difference on the device.
+
+[#newimage]
+=== Bonus: boot the new image
+
+Once the pipeline run has finished, the new image is available to everybody. Check that it is listed:
+
+[source,sh,role=execute]
+----
+caib image list
+----
+
+The newest `pr-build-validate` image with the status `Completed` is the one your instructor just built. If you like,
+go back to xref:activity-02.adoc#lease[Booting a RHIVOS image], and lease, flash, and boot it on your own virtual device,
+exactly as before. Make sure you copy the URI of this new image, not the one you used before.
+
+TIP: The pipeline and all participants share the same pool of virtual devices. If `jmp shell` keeps waiting for a
+lease, all devices are busy. Press *Ctrl+C* and try again in a few minutes.
+
+
+[#bonus]
+== Bonus: build the application yourself
+
+NOTE: This section is a bonus. Do it if you have time left.
 
 The `auto-app` application can also be built directly in your workspace, without the pipeline. Your workspace already
 contains the compiler and build tools.
