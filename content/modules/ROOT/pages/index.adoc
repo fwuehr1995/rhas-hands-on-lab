@@ -21,9 +21,19 @@ platform in action.
 * Log in to your prepared workspace and connect it to the build service and to Jumpstarter
 * Lease a virtual device, flash a RHIVOS image onto it, and boot it
 * Explore the running system: the safety-relevant root partition, the QM partition, and the containerized applications in both
+* See how SELinux labels control which applications may communicate across the partitions
 * Find out how the image you booted was built: the image manifest and the automated build pipeline
 
-The hands-on part takes about 60 minutes.
+== How the lab runs
+
+. *Introduction* - All participants start together with a short introduction to the platform, the demo application,
+  and the idea of freedom from interference.
+. *Hands-on* - You work through the lab activities in your own workspace, at your own pace. Instructors are in the room to help.
+  This part takes about 60 minutes.
+. *Demonstrations* - Your instructors show, on the projector, what does not fit into a hands-on lab: a change running
+  through the build pipeline, the same image on a physical ARM board, and freedom from interference under load.
+
+Sections marked *Bonus* are optional. Skip them if you are short on time, and come back to them later.
 
 At the end of this lab, you will have a basic understanding of the Red Hat Automotive Suite and how it helps you develop, build, and test automotive software.
 

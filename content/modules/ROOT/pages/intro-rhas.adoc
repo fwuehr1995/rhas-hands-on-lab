@@ -81,7 +81,8 @@ image::rhas/04-app-workflow.svg[Generic automotive app development workflow: cod
 
 In this lab, you follow the lower half of this flow: you take an image that the pipeline has already built from the
 artifact store, flash it onto a virtual machine with Jumpstarter, and look inside. In the last activity, you walk back through
-the manifest and the OS build pipeline that produced it.
+the manifest and the OS build pipeline that produced it. The upper half, a code change that runs through the pipeline and
+produces a new image, is shown by your instructors on the projector.
 
 The path to a physical device under test uses the same image and the same Jumpstarter commands. Your instructors show it
 in a short excursion on a real ARM SoC board.
