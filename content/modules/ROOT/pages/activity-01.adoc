@@ -5,8 +5,8 @@
 Here is a quick overview of the first activities in this lab:
 
 - Log in to the Red Hat Automotive Suite with the lab user assigned to you.
-- Open your personal, ready-to-code workspace in Red Hat OpenShift Dev Spaces.
-- Verify that the Cloud Automotive Image Builder service is reachable from your workspace.
+- Open your personal, ready-to-code workspace in Red Hat OpenShift Dev Spaces, the cloud development environment of the Red Hat Automotive Suite.
+- Verify that the Cloud Automotive Image Builder service (the RHAS Builder) is reachable from your workspace.
 - Authenticate to the Jumpstarter service so you can lease a test device later.
 
 Your user account has already been created for you. Every lab user gets a personal workspace in OpenShift Dev Spaces,

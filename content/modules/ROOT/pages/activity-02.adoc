@@ -82,7 +82,7 @@ A physical device with a similar interface is used in exactly the same way.
 [#caibimagelist]
 == Pick an image
 
-Images are built by the Cloud Automotive Image Builder service and kept in the cluster registry, the *artifact store*.
+Images are built by the Cloud Automotive Image Builder service (the RHAS Builder) and kept in the cluster registry, the *artifact store*.
 List them:
 
 [source,sh,role=execute]

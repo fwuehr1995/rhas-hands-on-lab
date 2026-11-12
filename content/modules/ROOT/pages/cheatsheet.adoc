@@ -16,14 +16,14 @@ TIP: Log in in a *private browser window*. Cookies left over from another lab ca
 
 == Application URLs
 
-=== Red Hat Dev Spaces https://devspaces.{openshift_cluster_ingress_domain}['link',window=_blank]
+=== Red Hat OpenShift Dev Spaces https://devspaces.{openshift_cluster_ingress_domain}['link',window=_blank]
 
 [source,sh,role=execute,subs=attributes+]
 ----
 https://devspaces.{openshift_cluster_ingress_domain}
 ----
 
-=== Red Hat Automotive Suite / OpenShift console https://console-openshift-console.{openshift_cluster_ingress_domain}['link',window=_blank]
+=== OpenShift console https://console-openshift-console.{openshift_cluster_ingress_domain}['link',window=_blank]
 
 [source,sh,role=execute,subs=attributes+]
 ----

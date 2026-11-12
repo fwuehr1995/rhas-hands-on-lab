@@ -3,6 +3,8 @@
 == Overview
 https://www.redhat.com/en/blog/new-standard-red-hat-vehicle-operating-system-modern-and-future-vehicles[Red Hat In-Vehicle Operating System (RHIVOS),window=_blank]
 delivers a Linux-based foundation for the software-defined vehicle, enabling cloud-native development, functional safety, and long-term relevancy.
+It is the operating system that the Red Hat Automotive Suite targets: with the suite, you develop and test applications
+for RHIVOS and build complete RHIVOS OS images.
 
 RHIVOS is built around three principles:
 

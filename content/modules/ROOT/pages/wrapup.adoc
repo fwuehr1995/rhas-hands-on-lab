@@ -2,7 +2,7 @@
 
 During the workshop, you have learned how to:
 
-- work in a prepared cloud development environment in Red Hat OpenShift Dev Spaces, connected to the Red Hat Automotive Suite.
+- work in Red Hat OpenShift Dev Spaces, the cloud development environment of the Red Hat Automotive Suite.
 - lease a test device with Jumpstarter, flash a Red Hat In-Vehicle OS (RHIVOS) image onto it, and boot it.
 - tell the root (ASIL) partition and the QM partition apart, and see how they isolate workloads of different criticality.
 - see how SELinux labels decide which applications may communicate across the partitions.

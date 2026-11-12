@@ -1,13 +1,27 @@
 = Red Hat Automotive Suite
 
 == Overview
-The Red Hat Automotive Suite (RHAS) provides a consistent platform and operations for Linux and containers, from the cloud all the way into the vehicle.
-It is built on two foundations:
+The https://github.com/rhadp[Red Hat Automotive Suite (RHAS),window=_blank] is an integrated development environment for
+automotive software. It enables automotive software development teams to develop, test, and deploy applications
+targeting the xref:intro-rhivos.adoc[Red Hat In-Vehicle Operating System (RHIVOS)], using modern cloud-native practices
+built on https://www.redhat.com/en/technologies/cloud-computing/openshift[Red Hat OpenShift,window=_blank].
 
-- https://www.redhat.com/en/technologies/cloud-computing/openshift[Red Hat OpenShift Container Platform,window=_blank] in the cloud or data center, where you develop, build, integrate, and test your software.
-- xref:intro-rhivos.adoc[Red Hat In-Vehicle Operating System (RHIVOS)] in the vehicle, where your software runs.
+RHAS combines a set of tools on one OpenShift cluster:
 
-On top of these foundations, RHAS creates an integrated ecosystem for software-defined vehicle development, where you and your team can:
+- *Platform infrastructure* - Red Hat OpenShift, single sign-on with the Red Hat build of Keycloak, and OpenShift GitOps,
+  which deploys and maintains the platform components. The *Red Hat Automotive Suite* sign-in page you log in with
+  belongs to this single sign-on.
+- *Red Hat OpenShift Dev Spaces* - the cloud development environment (CDE): your workspace in the browser.
+- *Jumpstarter* - hardware-in-the-loop (HIL) testing: access to virtual and physical test devices, for you and for the pipelines.
+- *RHAS Builder* - RHIVOS image builds with the Automotive Image Builder, as a service on OpenShift. You use it with the
+  `caib` (Cloud Automotive Image Builder) command.
+
+In this lab, you work with all three platform components: you open your workspace in Dev Spaces, lease a device with Jumpstarter, and
+list and follow image builds with `caib`. Your instructors show how Red Hat OpenShift Pipelines ties them together to
+build and test every change automatically. The images built this way run RHIVOS, in the vehicle or, in this lab, on a
+virtual device.
+
+RHAS creates an integrated ecosystem for software-defined vehicle development, where you and your team can:
 
 - Access pre-configured tools and standardized workflows without the usual setup headaches.
 - Leverage automated testing processes for faster turn-around times in development and testing.
@@ -27,7 +41,7 @@ RHAS covers the complete software lifecycle as a continuous loop of four stages:
 . **Integration** - Build, test, and integrate code changes within a shared repository.
   https://www.redhat.com/en/technologies/cloud-computing/openshift/pipelines[Red Hat OpenShift Pipelines,window=_blank] builds and tests your code,
   https://www.redhat.com/en/products/trusted-application-pipeline[Red Hat Trusted Application Pipeline (TAP),window=_blank] secures your software supply chain,
-  and https://www.redhat.com/en/technologies/cloud-computing/quay[Red Hat Quay,window=_blank] stores the resulting artifacts.
+  and a container registry, such as https://www.redhat.com/en/technologies/cloud-computing/quay[Red Hat Quay,window=_blank] or the OpenShift internal registry used in this lab, stores the resulting artifacts.
 . **Deployment and delivery** - Deploy changes to staging or deliver them to production for approval.
   https://jumpstarter.dev/[Jumpstarter,window=_blank] deploys your software to staging targets, and device management delivers it to production.
 . **Targets** - Your software runs on virtual instances, on physical devices, and finally on the vehicles of a fleet.
@@ -114,7 +128,7 @@ Key Components:
 - https://docs.redhat.com/en/documentation/red_hat_openshift_dev_spaces/3.20[OpenShift Dev Spaces,window=_blank] for consistent, cloud-based development environments.
 - https://jumpstarter.dev/[Jumpstarter,window=_blank] for automated testing across virtual and physical hardware.
 - https://www.redhat.com/en/products/trusted-application-pipeline[Red Hat Trusted Application Pipeline (TAP),window=_blank] for securing your software supply chain.
-- https://www.redhat.com/en/technologies/cloud-computing/quay[Red Hat Quay,window=_blank] as the registry for your container images and other artifacts.
+- A container registry, such as https://www.redhat.com/en/technologies/cloud-computing/quay[Red Hat Quay,window=_blank] or the OpenShift internal registry used in this lab, for your container images and other artifacts.
 - Telemetry and device management for feedback from the targets and delivery to the vehicle fleet (not covered in this lab).
 
 [#hiltesting]
