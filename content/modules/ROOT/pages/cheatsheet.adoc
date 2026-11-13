@@ -33,10 +33,10 @@ https://console-openshift-console.{openshift_cluster_ingress_domain}
 === Your lab repository
 
 Needed if your Dev Spaces dashboard shows no workspace yet, or if you have to recreate it: paste it under
-*Create Workspace* -> *Import from Git*, *replace the user number in the URL with your own*, and click
+*Create Workspace* -> *Import from Git*, *replace `NN` with the two-digit number of your lab user* (for example `workshop-user07`), and click
 *Create & Open*.
 
-[source,sh,role=execute,subs=attributes+]
+[source,sh,role=copypaste,subs=attributes+]
 ----
 {lab_user_repo_url}
 ----

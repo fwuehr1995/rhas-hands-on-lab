@@ -197,7 +197,7 @@ Check the system architecture:
 uname -m
 ----
 
-It prints `aarch64`: this is an ARM based device, just like most automotive ECUs. The same image can also be flashed onto a physical ARM board.
+It prints `aarch64`: this is an ARM based device, just like most automotive electronic control units (ECUs). The same image can also be flashed onto a physical ARM board.
 
 .Excursion: from the virtual device to a real board
 ****

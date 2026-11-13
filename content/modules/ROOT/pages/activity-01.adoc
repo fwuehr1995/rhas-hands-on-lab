@@ -50,10 +50,8 @@ terminal does not have the focus, the browser handles the keys instead.
 == Log in to Red Hat OpenShift Dev Spaces
 
 You do not need to register. At the start of the lab, you get a slip of paper with your lab user, for example `user35`.
-Your instructor tells you the initial password, which is the same for everybody.
-
-// TODO(provisioning): 70 lab users exist (user1 ... user70?). Confirm whether the numbers below 10
-// are zero-padded (user01) so that the printed slips match.
+The lab users are numbered with two digits, from `user01` to `user70`. Your instructor tells you the initial password,
+which is the same for everybody.
 
 IMPORTANT: Open Red Hat OpenShift Dev Spaces in a *private browser window*:
 
@@ -93,12 +91,10 @@ your workspace from that personal repository. Look at the left side of the Dev S
 ----
 {lab_user_repo_url}
 ----
-.. *Replace the user number in the URL with the number of your own lab user*, as printed on your slip.
-   Otherwise you work in the repository of somebody else.
+.. *Replace `NN` at the end of the URL with the number of your own lab user*, as printed on your slip, with two
+   digits: `user07` gets `workshop-user07`, not `workshop-user7`.
 .. Click *Create & Open*.
 
-// TODO(provisioning): set lab_user_repo_url in antora.yml to the URL of the personal repositories, with
-// an example user number, for example .../user00/sc-demo, and adjust the sentence above if needed.
 
 The workspace now starts. It walks through initializing, waiting for the workspace to start, and finally opening the IDE.
 
@@ -140,6 +136,10 @@ print wide output.
 TIP: If the editor asks you to pick a color theme on first start, choose any.
 
 Your prompt reads `(venv) sc-demo (main) $`. The Python virtual environment the lab needs is already active.
+
+// TODO(dry run): with the personal repositories, the project directory may be named workshop-userNN
+// instead of sc-demo. If so, update the prompts and the repository name on this page and in
+// activity-02 and activity-03.
 
 First, check that the Cloud Automotive Image Builder service is reachable:
 

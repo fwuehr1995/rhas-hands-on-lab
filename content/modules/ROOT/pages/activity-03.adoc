@@ -374,10 +374,9 @@ allow is blocked. The access rights to the communication between the partitions 
 are part of the image and enforced by the operating system. The socket file permissions (`srw-rw-rw-`) alone would let
 anybody in; SELinux is the layer that decides.
 
-// TODO(selinux): Open question: the local radio-client logged TCP connect errors to
-// 10.88.0.1:31000 ("Cannot assign requested address") rather than permission errors; check
-// with "ausearch -m avc -ts recent" whether SELinux denials are logged when it fails, and
-// refine the explanation above if needed.
+// TODO(selinux): the current radio client starts without errors outside the container and only shows
+// RADIO UNAVAILABLE. Check with "ausearch -m avc -ts recent" whether SELinux logs a denial for it; if
+// so, consider an optional step that shows the denial as proof.
 
 
 [#ffi]

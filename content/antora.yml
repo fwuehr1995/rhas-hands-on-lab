@@ -14,10 +14,11 @@ asciidoc:
     # Public upstream lab repository, offered on the wrap-up page for
     # working through the lab again after the event.
     lab_repo_url: https://github.com/shetze/sc-demo
-    # Personal copy of the lab repository for every lab user, with an example
-    # user number that participants replace with their own.
-    # TODO(provisioning): set to the URL of the personal repositories.
-    lab_user_repo_url: https://github.com/shetze/sc-demo
+    # Personal copy of the lab repository for every lab user (workshop-user01
+    # ... workshop-user70). NN is replaced by the participant; left as a
+    # placeholder on purpose, so that an unedited URL fails instead of
+    # opening somebody else's repository.
+    lab_user_repo_url: https://github.com/rhadp-workshop/workshop-userNN
     lab_name: "Summit Connect Hands-On-Lab: Containers on wheels"
     release-version: master
     page-pagination: true
