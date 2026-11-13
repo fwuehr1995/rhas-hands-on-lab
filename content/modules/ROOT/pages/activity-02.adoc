@@ -27,18 +27,19 @@ To lease a QEMU Exporter and open a session on it, run the following command in 
 
 [source,sh,role=execute]
 ----
-jmp shell -l device=qemu
+jmp shell -l device=qemu --duration 1h
 ----
 
 The `-l` parameter selects an Exporter by label. Every Exporter in this lab carries the labels
 `device=qemu,type=virtual`, so `device=qemu` matches any free one.
 
-The lease is granted for 30 minutes, and is released automatically when you leave the shell.
-You keep using this lease in the next activity, so move on without long breaks.
+`--duration 1h` requests the lease for one hour. Without it, a lease lasts only 30 minutes, which is too short for
+this lab. The lease is released automatically when you leave the shell. You keep using this lease in the next
+activity, so move on without long breaks.
 
-IMPORTANT: After 30 minutes, the lease ends and the Jumpstarter shell closes by itself, even in the middle of your work.
-You are then back at the `(venv) sc-demo (main) $` prompt. This is expected: lease a device again, and flash and boot
-the image as described below. It only takes a minute. Set `DISKIMAGE` again before you flash: the variable is lost
+IMPORTANT: After one hour, the lease ends and the Jumpstarter shell closes by itself, even in the middle of your work.
+You are then back at the `(venv) sc-demo (main) $` prompt. This is expected: lease a device again with the same
+command, and flash and boot the image as described below. It only takes a minute. Set `DISKIMAGE` again before you flash: the variable is lost
 together with the old shell.
 
 TIP: Notice that your shell prompt changed to `sc-demo ⚡qemu-exporter-0 ➤`, naming the Exporter you were given. This is to remind you that you are inside a Jumpstarter shell session.
