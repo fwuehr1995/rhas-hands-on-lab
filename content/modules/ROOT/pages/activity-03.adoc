@@ -181,11 +181,11 @@ client does not start correctly.
 
 The client shows what the radio is playing:
 
-[source,sh]
+[source,text]
 ----
 Radio Los Santos
-Upper Echelon
-Travi$ Scott feat. 2 Chainz & T.I.
+Everyday
+Trouble feat. Gucci Mane
 VOL [##########----------] 50%
 > FWD | R:+ | E:+
 +/- Volume  SPACE Station  ESC Power  M Monitor  Q Quit
@@ -203,17 +203,19 @@ Press *+* a few times to turn the volume up, and press *SPACE* to switch to anot
 and watch the volume.
 
 Whenever the engine service in the root partition switches to reverse, the status line shows `< REV` and the radio
-turns its volume down on its own:
+turns its volume down on its own, here from 50% to 30%:
 
-[source,sh]
+[source,text]
 ----
 Radio Los Santos
-Sellin' Dope
-Freddie Gibbs & Mike Dean
+Everyday
+Trouble feat. Gucci Mane
 VOL [######--------------] 30%
 < REV | R:+ | E:+
 +/- Volume  SPACE Station  ESC Power  M Monitor  Q Quit
 ----
+
+When the engine switches back to driving, the status line shows `> FWD` again and the volume returns to where it was.
 
 This is the whole demo application at work: the safety-relevant engine service in the root partition tells the radio
 service in the QM partition that the vehicle is reversing, through the routing manager.
@@ -501,7 +503,7 @@ like this:
 ----
 H?o!l*d ~U#p
 M~arion #Band$ @feat. N%ipsey &Hussle
-> FWD       CPU! | E:+
+> FWD | R:+ CPU! | E:+
 INTERFERENCE MONITOR  (M to close)
                      RADIO           ENGINE
 Service              AVAILABLE       AVAILABLE
@@ -517,7 +519,7 @@ NOTE: The monitor itself runs in the QM partition, so its display gets garbled t
 the `CPU`, `CPU share`, and `Deadline overrun` rows.
 
 - The radio column changes: `CPU` and `Data link` switch to `DEGRADED`, the CPU share drops below 100%, and deadline
-  overruns appear. The status line shows `CPU!` in place of the radio health.
+  overruns appear. The status line shows `CPU!` next to the radio health.
 - The engine column does not change: `CPU` stays `NORMAL`, the CPU share stays at 100%, and there is no deadline
   overrun. The direction still switches between `FWD` and `REV`.
 
