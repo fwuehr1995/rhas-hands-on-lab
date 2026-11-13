@@ -79,10 +79,10 @@ jmp get exporters
 
 [source,sh,role=execute]
 ----
-jmp shell -l device=qemu
+jmp shell -l device=qemu --duration 1h
 ----
 
-The lease ends after 30 minutes and the shell closes by itself. Lease, flash, and boot again to continue. Set
+The lease ends after one hour and the shell closes by itself. Lease, flash, and boot again to continue. Set
 `DISKIMAGE` again first: the variable is lost together with the old shell.
 
 === List hardware interfaces exposed on the Exporter
@@ -175,38 +175,65 @@ ls -l /run/ipc/vsomeip/
 getenforce
 ----
 
-=== Start the radio client directly from the root partition
+=== Start the radio client
 
 [source,sh,role=execute]
 ----
 podman exec -it qm podman exec -it systemd-radio radio-client
 ----
 
-=== Start, observe, and stop the FFI client (memory test)
+Volume: *+* / *-*, next station: *SPACE*, radio on/off: *ESC*, quit: *Q*.
+
+=== List the containers of the QM partition
 
 [source,sh,role=execute]
 ----
-podman exec qm systemctl start ffi_client
+podman exec qm podman ps
+----
+
+=== List the processes of the QM partition
+
+[source,sh,role=execute]
+----
+podman exec qm ps axl
+----
+
+=== Start the radio client outside the radio container (fails on purpose)
+
+[source,sh,role=execute]
+----
+podman exec -it qm radio-client
+----
+
+Press *Ctrl+C* if it does not return by itself.
+
+=== Put the QM partition under CPU load, watch, and stop it
+
+[source,sh,role=execute]
+----
+podman exec qm systemctl start sysbench
 ----
 
 [source,sh,role=execute]
 ----
-top -o %MEM
+top
 ----
 
 Press *q* to quit `top`.
 
 [source,sh,role=execute]
 ----
-journalctl -f -u ffi_server
+podman exec qm systemctl stop sysbench
 ----
+
+=== Check the engine log of the last 10 minutes
 
 [source,sh,role=execute]
 ----
-podman exec qm systemctl stop ffi_client
+journalctl -u engine --since "-10 min" --no-pager
 ----
 
-=== Get a shell in the QM partition
+=== Optional: get a shell in the QM partition
 
 [source,sh,role=execute]
 ----
@@ -215,39 +242,79 @@ podman exec -it qm /bin/bash
 
 Leave it again with `exit`.
 
-=== Start the radio client (inside the QM partition)
-
-[source,sh,role=execute]
-----
-podman exec -it systemd-radio radio-client
-----
-
-Volume: *+* / *-*, next station: *SPACE*, radio on/off: *ESC*, quit: *Q*.
-
-=== List the processes of the QM partition (inside the QM partition)
-
-[source,sh,role=execute]
-----
-ps axl
-----
-
 [#tmux]
-=== Optional: split the serial console with tmux
+=== tmux: split the serial console
 
-`tmux` is installed on the device. It lets you watch several things side by side, for example `top`, the engine log,
-and the radio client.
+`tmux` is installed on the device. It splits the serial console into several panes, so that you can watch several
+things side by side, for example the radio client and `top`. Start it on the device:
 
 [source,sh,role=execute]
 ----
 tmux
 ----
 
-All tmux keys start with *Ctrl+B*, followed by a second key:
+All tmux keys start with *Ctrl+B*. Press *Ctrl+B*, release both keys, and then press the second key:
 
-- *Ctrl+B*, then *"* : split the current pane into a top and a bottom half
-- *Ctrl+B*, then *%* : split the current pane into a left and a right half
-- *Ctrl+B*, then an arrow key: move to the neighboring pane
-- `exit` in a pane: close it. Closing the last pane ends tmux.
+[cols="1,3",options="header"]
+|===
+|Keys |What it does
+
+|*Ctrl+B*, then *"*
+|Split the current pane into an upper and a lower half
+
+|*Ctrl+B*, then *%*
+|Split the current pane into a left and a right half
+
+|*Ctrl+B*, then an arrow key
+|Move to the neighboring pane in that direction
+
+|*Ctrl+B*, then *z*
+|Zoom the current pane to the full window, and back again
+
+|*Ctrl+B*, then *[*
+|Scroll mode: scroll back with the arrow keys or *Page Up* / *Page Down*. Press *q* to leave it.
+
+|*Ctrl+B*, then *x*
+|Close the current pane, confirm with *y*
+
+|*Ctrl+B*, then *d*
+|Detach: leave tmux, while the programs in the panes keep running. Run `tmux attach` to get them back.
+
+|`exit`
+|Close the current pane. Closing the last pane ends tmux.
+|===
 
 WARNING: Pressing *Ctrl+B* three times in a row quits the Jumpstarter serial console. In tmux, press *Ctrl+B* only once
-before each command key.
+before each key.
+
+==== Mouse mode
+
+To use the mouse in tmux, turn on mouse mode. Run this in any pane:
+
+[source,sh,role=execute]
+----
+tmux set -g mouse on
+----
+
+Now you can click a pane to select it, drag the border between panes to resize them, and scroll with the mouse wheel.
+To select text for copying while mouse mode is on, hold *Shift* (on macOS: *Option*) while you select it. If that
+does not work, turn mouse mode off again:
+
+[source,sh,role=execute]
+----
+tmux set -g mouse off
+----
+
+// TODO(dry run): check how text selection works with tmux mouse mode in the Dev Spaces browser
+// terminal (Shift+drag on Linux/Windows; on macOS possibly Option+drag).
+
+==== Layout for the CPU load step
+
+. Press *Ctrl+B*, then *"*. You are in the lower pane.
+. Press *Ctrl+B*, then the *Up arrow* key, and start the radio client in the upper pane:
++
+[source,sh,role=execute]
+----
+podman exec -it qm podman exec -it systemd-radio radio-client
+----
+. Press *Ctrl+B*, then the *Down arrow* key. Use the lower pane for `top` and the `sysbench` commands.
