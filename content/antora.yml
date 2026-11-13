@@ -11,9 +11,13 @@ asciidoc:
     # Value below is the event cluster (sandbox1066). It stays up until
     # after the event.
     openshift_cluster_ingress_domain: apps.summit.sandbox1066.opentlc.com
-    # Repository the pre-provisioned workspaces are created from. Participants
-    # only need it if they have to recreate their workspace.
+    # Public upstream lab repository, offered on the wrap-up page for
+    # working through the lab again after the event.
     lab_repo_url: https://github.com/shetze/sc-demo
+    # Personal copy of the lab repository for every lab user, with an example
+    # user number that participants replace with their own.
+    # TODO(provisioning): set to the URL of the personal repositories.
+    lab_user_repo_url: https://github.com/shetze/sc-demo
     lab_name: "Summit Connect Hands-On-Lab: Containers on wheels"
     release-version: master
     page-pagination: true
